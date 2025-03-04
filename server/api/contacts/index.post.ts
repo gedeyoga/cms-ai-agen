@@ -1,0 +1,47 @@
+import { defineEventHandler, getQuery } from "h3";
+import { z } from "zod";
+import { create, findUniquePhone, list } from "~/repository/contactRepository";
+
+export default defineEventHandler(async (event) => {
+  const { name , phone, categoryId } = await readBody(event);
+  try {
+    const data = {
+      name,
+      phone,
+      categoryId
+    }
+
+    const schema = z.object({
+      name: z.string().min(2, 'Name minimum at leats 2 characters'),
+      phone: z.string().min(10, 'Phone minimum at least 10 characters'),
+      categoryId: z.array(z.number()).min(1, 'Category at least 1 category'),
+    })
+    schema.parse(data);
+
+    const checkPhone = await findUniquePhone(phone);
+
+    if(checkPhone != null){
+      return createError({
+        status: 422,
+        message: "Phone is registered use another phone.",
+      })
+    }
+
+  } catch (error: any) {
+    return createError({
+      status: 422,
+      message: "Validation error",
+      data: error.errors,
+    })
+  }
+
+  const response = await create({name, phone} , categoryId); 
+
+  return {
+    status: 200,
+    message: 'Create sucessfuly',
+    data: response,
+  };
+
+  
+});
