@@ -1,11 +1,9 @@
 import { defineEventHandler, getQuery } from 'h3'
 import { z } from 'zod'
 import { createChat } from '~/repository/chatHistoryRepository'
-import {
-    createContact,
-    find,
-    findUniquePhone,
-} from '~/repository/contactRepository'
+import { createContact, findUniquePhone } from '~/repository/contactRepository'
+import { removeTrailingNewlines } from '~/services/gemini-ai/helpers/stringHelper'
+import { askAgen } from '~/services/gemini-ai/repositories/agenRepository'
 import { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
 import { ContactInterface } from '~/types/ContactInterface'
 
@@ -53,7 +51,19 @@ export default defineEventHandler(async (event) => {
         role: 'user',
     }
 
-    const response = await createChat(chatHistory)
+    await createChat(chatHistory)
+
+    const agenResponse = await askAgen(contact.id, message)
+
+    const output = removeTrailingNewlines(agenResponse)
+
+    const agenChatHistory: ChatHistoryInterface = {
+        contactId: contact.id,
+        content: output,
+        role: 'assistant',
+    }
+
+    const response = await createChat(agenChatHistory)
 
     return {
         status: 200,

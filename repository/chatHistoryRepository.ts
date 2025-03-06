@@ -21,13 +21,13 @@ export async function createChat(data: ChatHistoryInterface) {
     return chatHistory
 }
 
-export async function findChatByContacts(contactId: number) {
+export async function findChatByContacts(contactId: number, orderBy = 'desc') {
     const chatHistories = await prisma.chatHistory.findMany({
         where: {
             contactId: contactId,
         },
         orderBy: {
-            createdAt: 'desc',
+            createdAt: orderBy == 'asc' ? 'asc' : 'desc',
         },
     })
 
