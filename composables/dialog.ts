@@ -1,14 +1,13 @@
 export const dialogState = () => {
-  const isOpen = useState('isOpen' , () => false);
+    const isOpen = useState('isOpen', () => false)
 
-  const closeDialog = () => {
-    isOpen.value = false
-  }
+    const closeDialog = () => {
+        isOpen.value = false
+    }
 
-  const openDialog = () => {
-    isOpen.value = true
-  }
+    const openDialog = () => {
+        isOpen.value = true
+    }
 
-  return {isOpen, closeDialog, openDialog};
-
+    return { isOpen, closeDialog, openDialog }
 }

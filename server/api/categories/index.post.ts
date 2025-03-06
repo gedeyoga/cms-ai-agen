@@ -1,17 +1,14 @@
-import { defineEventHandler, getQuery } from "h3";
-import { create, list } from "~/repository/categoryRepository";
-import { CategoryInterface } from "~/types/CategoryInterface";
+import { defineEventHandler, getQuery } from 'h3'
+import { createCategory, list } from '~/repository/categoryRepository'
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event);
+    const body = await readBody(event)
 
-  const response = await create(body); 
+    const response = await createCategory(body)
 
-  return {
-    status: 200,
-    message: 'Create sucessfuly',
-    data: response,
-  };
-
-  
-});
+    return {
+        status: 200,
+        message: 'Create sucessfuly',
+        data: response,
+    }
+})

@@ -1,8 +1,6 @@
 <script setup lang="ts">
-
-    import AlertDialog from '~/components/global/AlertDialog.vue';
-    import { Toaster } from '~/components/ui/sonner'
-
+import AlertDialog from '~/components/global/AlertDialog.vue'
+import { Toaster } from '~/components/ui/sonner'
 </script>
 
 <template>

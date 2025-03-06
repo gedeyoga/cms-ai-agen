@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import Content from '~/components/layout/Content.vue'
 import Sidebar from '~/components/layout/Sidebar.vue'
-import ContactList from '~/components/contact/ContactList.vue';
+import ContactList from '~/components/contact/ContactList.vue'
 </script>
 
 <template>

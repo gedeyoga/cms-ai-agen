@@ -16,7 +16,7 @@ const menus = ref<MenuInterface[]>([
         label: 'Category',
         icon: '',
         link: '/contact/category',
-        children: []
+        children: [],
     },
 ])
 
