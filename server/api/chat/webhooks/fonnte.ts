@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
     const { sender, name, message } =
         event.method == 'GET' ? getQuery(event) : await readBody(event)
 
-    console.log(sender, name, message);
 
     try {
         const data = {
@@ -81,7 +80,7 @@ export default defineEventHandler(async (event) => {
 
     const response = await createChat(agenChatHistory)
 
-    sendWhatsapp(sender, output)
+    await sendWhatsapp(sender, output)
 
     return {
         status: 200,
