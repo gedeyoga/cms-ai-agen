@@ -6,6 +6,7 @@ import { removeTrailingNewlines } from '~/services/gemini-ai/helpers/stringHelpe
 import { askAgen } from '~/services/gemini-ai/repositories/agenRepository'
 import { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
 import { ContactInterface } from '~/types/ContactInterface'
+import { sendWhatsapp } from '~/services/gemini-ai/services/fonnteClient'
 
 export default defineEventHandler(async (event) => {
     const formData =
@@ -77,6 +78,8 @@ export default defineEventHandler(async (event) => {
     }
 
     const response = await createChat(agenChatHistory)
+
+    sendWhatsapp(sender, output)
 
     return {
         status: 200,

@@ -3,8 +3,18 @@ import FormData from 'form-data'
 const base_url = process.env.FONNTE_API
 const token = process.env.FONNTE_TOKEN
 
-const sendWhatsapp = async (target, message) => {
-    const data = {
+interface FonnteInterface {
+    target: string
+    url: string
+    message: string
+    schedule: string
+    typing: string
+    delay: string
+    countryCode: string
+}
+
+export const sendWhatsapp = async (target: string, message: string) => {
+    const data: FonnteInterface = {
         target: target,
         message: message,
         url: '',
@@ -16,7 +26,7 @@ const sendWhatsapp = async (target, message) => {
 
     const formData = new FormData()
     for (const key in data) {
-        formData.append(key, data[key])
+        formData.append(key, data[key as keyof FonnteInterface])
     }
 
     const headers = {
@@ -30,5 +40,3 @@ const sendWhatsapp = async (target, message) => {
 
     return response
 }
-
-export { sendWhatsapp }
