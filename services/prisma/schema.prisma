@@ -16,7 +16,7 @@ model Contact {
   updatedAt DateTime @updatedAt
 
   categories  ContactCategory[]
-  ChatHistory ChatHistory[]
+  chatHistories ChatHistory[]
 }
 
 model Category {

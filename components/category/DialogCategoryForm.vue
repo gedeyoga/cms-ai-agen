@@ -48,7 +48,7 @@ watch(isOpen, (newVal) => {
 })
 
 const emit = defineEmits<{
-    onSubmit: () => void
+    (event: 'onSubmit'): void
 }>()
 
 const editForm = async (values: any) => {

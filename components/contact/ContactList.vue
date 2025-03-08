@@ -80,6 +80,7 @@ let dataContact = ref<ContactInterface>({
     id: null,
     name: '',
     phone: '',
+    status: '',
     createdAt: null,
     updatedAt: null,
     categories: [],
@@ -110,6 +111,7 @@ const resetDialog = () => {
         id: null,
         name: '',
         phone: '',
+        status: '',
         createdAt: null,
         updatedAt: null,
         categories: [],
@@ -160,7 +162,7 @@ onMounted(async () => {
                 :key="key"
                 class="border-gray-800"
             >
-                <TableCell>
+                <TableCell width="200px">
                     {{ contact.name }}
                 </TableCell>
                 <TableCell>

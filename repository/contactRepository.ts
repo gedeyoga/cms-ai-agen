@@ -28,6 +28,12 @@ export async function getContactsWithPagination(
                     category: true, // Ambil detail Role dari UserRole
                 },
             },
+            chatHistories: {
+                take: 1, // Ambil hanya satu pesan terbaru
+                orderBy: {
+                    createdAt: 'desc', // Urutkan dari yang terbaru
+                },
+            },
         },
         where: {
             name: {

@@ -58,17 +58,21 @@ let data = ref({
 })
 
 watch(isOpen, (newVal) => {
-    console.log(props.contact.categories)
+    const categories = props.contact.categories ? props.contact.categories : []
     data.value = {
         ...props.contact,
-        categoryId: props.contact.categories.map((item: CategoryInterface) =>
+        categoryId: categories.map((item: CategoryInterface) =>
             item.id ? item.id.toString() : ''
         ),
     }
 })
 
+// const emit = defineEmits<{
+//     onSubmit: () => void
+// }>()
+
 const emit = defineEmits<{
-    onSubmit: () => void
+    (event: 'onSubmit'): void
 }>()
 
 const editForm = async (values: any) => {

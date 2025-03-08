@@ -11,6 +11,9 @@ export const find = async (id: number) => {
 
 export async function createChat(data: ChatHistoryInterface) {
     const chatHistory = await prisma.chatHistory.create({
+        include: {
+            contact: true,
+        },
         data: {
             contactId: data.contactId,
             role: data.role,
@@ -23,6 +26,9 @@ export async function createChat(data: ChatHistoryInterface) {
 
 export async function findChatByContacts(contactId: number, orderBy = 'desc') {
     const chatHistories = await prisma.chatHistory.findMany({
+        include: {
+            contact: true,
+        },
         where: {
             contactId: contactId,
         },

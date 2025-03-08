@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createChat } from '~/repository/chatHistoryRepository'
 import { find } from '~/repository/contactRepository'
 import { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
+import { ContactInterface } from '~/types/ContactInterface'
 
 export default defineEventHandler(async (event) => {
     const { contactId, message } = await readBody(event)
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
     const chatHistory: ChatHistoryInterface = {
         contactId: contactId,
         content: message,
-        role: 'user',
+        role: 'assistant',
     }
 
     const response = await createChat(chatHistory)
