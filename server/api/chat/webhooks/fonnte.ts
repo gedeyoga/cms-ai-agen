@@ -8,6 +8,19 @@ import { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
 import { ContactInterface } from '~/types/ContactInterface'
 
 export default defineEventHandler(async (event) => {
+    const formData =
+        event.method == 'GET' ? getQuery(event) : await readBody(event)
+
+    if (
+        (event.method == 'GET' && !formData.hasOwnProperty('sender')) ||
+        (event.method == 'POST' && !formData.hasOwnProperty('sender'))
+    ) {
+        return {
+            status: 200,
+            message: 'No data fetched!',
+        }
+    }
+
     const { sender, name, message } =
         event.method == 'GET' ? getQuery(event) : await readBody(event)
 
