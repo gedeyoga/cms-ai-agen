@@ -2,6 +2,7 @@ import { defineEventHandler, getQuery } from 'h3'
 import { z } from 'zod'
 import { createChat } from '~/repository/chatHistoryRepository'
 import { find } from '~/repository/contactRepository'
+import { sendWhatsapp } from '~/services/gemini-ai/services/fonnteClient'
 import { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
 import { ContactInterface } from '~/types/ContactInterface'
 
@@ -44,6 +45,8 @@ export default defineEventHandler(async (event) => {
     }
 
     const response = await createChat(chatHistory)
+
+    await sendWhatsapp(response.contact.phone, message);
 
     return {
         status: 200,
