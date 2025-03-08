@@ -17,6 +17,8 @@ model Contact {
 
   categories  ContactCategory[]
   chatHistories ChatHistory[]
+
+  @@map("contact")
 }
 
 model Category {
@@ -26,6 +28,7 @@ model Category {
   updatedAt DateTime @updatedAt
 
   contacts ContactCategory[]
+  @@map("category")
 }
 
 model ContactCategory {
@@ -33,10 +36,12 @@ model ContactCategory {
   contactId  Int
   categoryId Int
 
-  contact  Contact  @relation(fields: [contactId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
+  contact  Contact  @relation(fields: [contactId], references: [id], map: "fk_contactcategory_contact")
+  category Category @relation(fields: [categoryId], references: [id], map: "fk_contactcategory_category")
 
   @@index([contactId, categoryId])
+  @@map("contactcategory")
+
 }
 
 enum Status {
@@ -58,4 +63,5 @@ model ChatHistory {
   updatedAt DateTime @updatedAt
 
   contact Contact @relation(fields: [contactId], references: [id])
+  @@map("chathistory")
 }
