@@ -4,13 +4,28 @@ import { Input } from '../ui/input'
 import ListMessage from './ListMessage.vue'
 import type { MessageInterface } from '~/types/MessageInterface'
 import { Icon } from '@iconify/vue'
+import { useChatState } from '~/composables/chatState'
+import SidebarChatSkeleton from './SidebarChatSkeleton.vue'
 
-let messages = ref<MessageInterface[]>([])
 let contacts = ref<ContactInterface[]>([])
 let search = ref('')
-let messageActive = ref<MessageInterface>()
+const {
+    incomingChat,
+    openMessage,
+    setChatActive,
+    chatActive,
+    setContactActive,
+    messages,
+    setMessages,
+} = useChatState()
+let loading = ref<boolean>(false)
+
+const setLoading = (val: boolean) => {
+    loading.value = val
+}
 
 const fetchData = async () => {
+    setLoading(true)
     const response: any = await $fetch('/api/contacts', {
         query: {
             search: search.value,
@@ -19,36 +34,57 @@ const fetchData = async () => {
         },
     })
 
-    if (response.status == 200) {
-        messages.value = response.data.map((item: ContactInterface) => {
-            const chatHistory = item.chatHistories
-                ? item.chatHistories.length > 0
-                    ? item.chatHistories[0]
-                    : null
-                : null
+    setLoading(false)
 
-            return {
-                contactId: item.id,
-                name: item.name,
-                image: 'https://www.gravatar.com/avatar/?d=identicon',
-                message: chatHistory ? chatHistory.content : '-',
-                createdAt: chatHistory ? chatHistory.createdAt : '-',
-                unreadCount: 0,
-                clicked: false,
-            }
-        })
+    if (response.status == 200) {
+        setMessages(
+            response.data.map((item: ContactInterface) => {
+                const chatHistory = item.chatHistories
+                    ? item.chatHistories.length > 0
+                        ? item.chatHistories[0]
+                        : null
+                    : null
+
+                return {
+                    contactId: item.id,
+                    name: item.name,
+                    image: '/images/default-user.png',
+                    message: chatHistory ? chatHistory.content : '-',
+                    createdAt: chatHistory ? chatHistory.createdAt : '-',
+                    unreadCount: item.unreadCount,
+                    role: chatHistory ? chatHistory.role : '-',
+                }
+            })
+        )
         contacts.value = response.data
     }
 }
 
-const emit = defineEmits<{
-    (event: 'messageClick', contact: ContactInterface): void
-}>()
+watch(incomingChat, (val) => {
+    if (val) {
+        const index = messages.value.findIndex(
+            (message) => message.contactId == val.contactId
+        )
+        if (index >= 0) {
+            messages.value.splice(index, 1)
+        }
+
+        messages.value.unshift({
+            contactId: val.contactId,
+            name: val.contact?.name ?? '',
+            image: '/images/default-user.png',
+            message: val.content,
+            createdAt: val.createdAt ?? '',
+            unreadCount: val.contact?.unreadCount ?? 0,
+            role: val.role,
+        })
+    }
+})
 
 const listMessageClicked = (message: MessageInterface, index: number) => {
-    messageActive.value = message
-
-    emit('messageClick', contacts.value[index])
+    setChatActive(message)
+    setContactActive(contacts.value[index])
+    openMessage(true)
 }
 
 const searchData = () => {
@@ -60,9 +96,7 @@ const clearSearch = () => {
     fetchData()
 }
 
-onMounted(async () => {
-    await fetchData()
-})
+await fetchData()
 </script>
 
 <template>
@@ -102,6 +136,14 @@ onMounted(async () => {
         </div>
 
         <div
+            v-if="loading"
+            class="space-y-4 overflow-y-auto scroll-smooth h-full overflow-hidden px-3"
+        >
+            <SidebarChatSkeleton></SidebarChatSkeleton>
+        </div>
+
+        <div
+            v-else
             class="space-y-1 overflow-y-auto scroll-smooth h-full overflow-hidden px-3"
         >
             <ListMessage
@@ -109,10 +151,11 @@ onMounted(async () => {
                 :key="key"
                 :name="message.name"
                 :message="message.message"
-                :image="'https://www.gravatar.com/avatar/?d=identicon'"
+                :image="message.image"
                 :created-at="message.createdAt"
                 :unread-count="message.unreadCount"
-                :clicked="messageActive?.contactId === message.contactId"
+                :role="message.role"
+                :clicked="chatActive?.contactId === message.contactId"
                 @onClick="listMessageClicked(message, key)"
             ></ListMessage>
         </div>

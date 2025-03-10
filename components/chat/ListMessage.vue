@@ -8,6 +8,7 @@ const props = defineProps<{
     createdAt: string
     unreadCount: number
     clicked?: boolean
+    role: string
 }>()
 
 const { contextualDateFormat } = useFilters()
@@ -43,15 +44,16 @@ const emit = defineEmits<{
                     contextualDateFormat(props.createdAt)
                 }}</span>
             </div>
-            <div class="flex align-items-center">
+            <div class="flex justify-between align-items-center">
                 <p class="text-sm text-gray-400 truncate">
+                    {{ props.role == 'assistant' ? 'You :' : '' }}
                     {{ props.message }}
                 </p>
                 <div v-if="props.unreadCount > 0" class="ml-2">
                     <div
                         class="px-1.5 py-[1px] text-zinc-950 dark:text-zinc-950 rounded-full bg-black dark:bg-white text-xs"
                     >
-                        1
+                        {{props.unreadCount}}
                     </div>
                 </div>
             </div>

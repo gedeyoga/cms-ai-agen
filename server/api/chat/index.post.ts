@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
         }
 
         const schema = z.object({
-            contactId: z.number().min(2, 'Name minimum at leats 2 characters'),
+            contactId: z.number().min(1, 'Name minimum at leats 2 characters'),
             message: z.string(),
         })
 
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
 
     const response = await createChat(chatHistory)
 
-    await sendWhatsapp(response.contact.phone, message);
+    // await sendWhatsapp(response.contact.phone, message);
 
     return {
         status: 200,

@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
     const { sender, name, message } =
         event.method == 'GET' ? getQuery(event) : await readBody(event)
 
-
     try {
         const data = {
             sender,

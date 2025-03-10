@@ -34,6 +34,15 @@ export async function getContactsWithPagination(
                     createdAt: 'desc', // Urutkan dari yang terbaru
                 },
             },
+            _count: {
+                select: {
+                    chatHistories: {
+                        where: {
+                            readedAt: null, // Hitung jumlah chat yang belum dibaca
+                        },
+                    },
+                },
+            },
         },
         where: {
             name: {
@@ -61,6 +70,10 @@ export async function getContactsWithPagination(
             contact.categories = contact.categories.map(
                 (item: any) => item.category
             )
+            contact.unreadCount = contact._count?.chatHistories ?? 0;
+
+            delete contact._count
+
             return contact
         }),
         meta,
@@ -91,7 +104,14 @@ export async function list(params: ListParams) {
 }
 
 export async function createContact(data: any, categoryId = []) {
-    const contact = await prisma.contact.create({
+    let contact = await prisma.contact.create({
+        include: {
+            categories: {
+                include: {
+                    category: true,
+                },
+            },
+        },
         data: {
             name: data.name,
             phone: data.phone,
@@ -106,6 +126,8 @@ export async function createContact(data: any, categoryId = []) {
         },
     })
 
+    contact.categories = contact.categories.map((item: any) => item.category)
+
     return contact
 }
 
@@ -116,7 +138,14 @@ export async function updateContact(id: number, data: any, categoryId = []) {
         },
     })
 
-    const contact = await prisma.contact.update({
+    let contact = await prisma.contact.update({
+        include: {
+            categories: {
+                include: {
+                    category: true,
+                },
+            },
+        },
         where: {
             id: id,
         },
@@ -133,6 +162,8 @@ export async function updateContact(id: number, data: any, categoryId = []) {
             },
         },
     })
+
+    contact.categories = contact.categories.map((item: any) => item.category)
 
     return contact
 }

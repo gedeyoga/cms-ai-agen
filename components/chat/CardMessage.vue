@@ -5,46 +5,79 @@ import Input from '../ui/input/Input.vue'
 import BoxMessage from './BoxMessage.vue'
 import type { ContactInterface } from '~/types/ContactInterface'
 import { Icon } from '@iconify/vue'
+import { useChatState } from '~/composables/chatState'
+import DetailChat from './DetailChat.vue'
+import { useDetailChatState } from '~/composables/detailChatState'
+import BoxMessageSkeleton from './BoxMessageSkeleton.vue'
+import { Loader2 } from 'lucide-vue-next'
 
-const props = defineProps({
-    contact: {
-        type: Object as PropType<ContactInterface>,
-    },
-})
+const {
+    toggleDetailContact,
+    setContact,
+    contact,
+    showDetailChat,
+    setChatHistories,
+    chatHistories,
+} = useDetailChatState()
 
-let chatHistories = ref<ChatHistoryInterface[]>([])
+const { setIncomingChat, contactActive } = useChatState()
+
 let message = ref<string>('')
+let loading = ref<boolean>(false)
+let loadingSendMessage = ref<boolean>(false)
+
+const setLoading = (val: boolean) => {
+    loading.value = val
+}
+
+const setLoadingSendMessage = (val: boolean) => {
+    loadingSendMessage.value = val
+}
 
 const fetchMessages = async (contactId: number) => {
+    setLoading(true)
     const response: any = await $fetch('/api/chat/' + contactId + '/messages', {
         method: 'GET',
     })
+    setLoading(false)
 
     if (response.status == 200) {
-        chatHistories.value = response.data
+        setChatHistories(response.data)
     }
 }
 
 const sendMessage = async () => {
+    setLoadingSendMessage(true)
     const response: any = await $fetch('/api/chat', {
         method: 'POST',
         body: {
-            contactId: props.contact?.id,
+            contactId: contact.value?.id,
             message: message.value,
         },
     })
 
+    setLoadingSendMessage(false)
+
     if (response.status == 200) {
         chatHistories.value.unshift(response.data)
+        setIncomingChat(response.data)
     }
 
     message.value = ''
 }
 
+const showDetailContact = () => {
+    if (contactActive.value) {
+        setContact(contactActive.value)
+        toggleDetailContact(!showDetailChat.value)
+    }
+}
+
 watch(
-    () => props.contact,
+    () => contactActive.value,
     (newVal) => {
         if (newVal) {
+            setContact(newVal)
             fetchMessages(newVal.id ? newVal.id : 0)
         }
     }
@@ -59,24 +92,37 @@ watch(
                     <div>
                         <img
                             class="w-10 h-10 rounded-full object-center"
-                            src="https://gravatar.com/avatar/5c3e210bcdb637430f921e6f9a956ab1eda894dc9fe019fdd6b7c7f701dcf2e7"
+                            :src="'/images/default-user.png'"
                             alt=""
                         />
                     </div>
                     <div class="ml-3">
                         <p class="text-lg font-semibold mb-1">
-                            {{ props.contact?.name }}
+                            {{ contact?.name }}
                         </p>
                         <p class="text-xs text-gray-400">
-                            <Badge>{{ props.contact?.status }}</Badge>
+                            <Badge>{{ contact?.status }}</Badge>
                         </p>
                     </div>
                 </div>
                 <div class="flex items-center">
-                    <Button>Detail</Button>
+                    <Button @click="showDetailContact">
+                        <template v-if="showDetailChat">
+                            <Icon icon="mdi:close" :ssr="true"></Icon>
+                            Close
+                        </template>
+                        <span v-else>Detail</span>
+                    </Button>
                 </div>
             </div>
             <div
+                v-if="loading"
+                class="grow-1 h-full p-4 overflow-y-auto overflow-hidden flex flex-col-reverse"
+            >
+                <BoxMessageSkeleton></BoxMessageSkeleton>
+            </div>
+            <div
+                v-else
                 class="grow-1 h-full p-4 overflow-y-auto overflow-hidden flex flex-col-reverse"
             >
                 <BoxMessage
@@ -93,9 +139,11 @@ watch(
                         @keyup.enter="sendMessage"
                         v-model="message"
                         placeholder="Type message..."
+                        :disabled="loadingSendMessage"
                     ></Input>
-                    <Button v-if="message" @click="sendMessage">
-                        <Icon icon="mdi:send" :ssr="true"></Icon>
+                    <Button v-if="message" @click="sendMessage" :disabled="loadingSendMessage">
+                        <Icon v-if="loadingSendMessage == false" icon="mdi:send" :ssr="true"></Icon>
+                        <Loader2 v-else class="w-4 h-4 mr-2 animate-spin" />
                     </Button>
                 </div>
             </div>
@@ -109,4 +157,6 @@ watch(
             </div>
         </template>
     </div>
+
+    <DetailChat></DetailChat>
 </template>

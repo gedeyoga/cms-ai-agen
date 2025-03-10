@@ -32,7 +32,7 @@ const { contextualDateFormat, chatFormat } = useFilters()
         <div class="mt-2" v-if="props.position === 'left'">
             <img
                 class="w-7 h-7 rounded-full object-center"
-                :src="'https://www.gravatar.com/avatar/?d=identicon'"
+                :src="'/images/default-user.png'"
                 alt=""
             />
         </div>

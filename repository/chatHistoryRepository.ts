@@ -1,3 +1,4 @@
+import moment from 'moment'
 import prisma from '~/services/prisma/client'
 import type { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
 
@@ -18,6 +19,7 @@ export async function createChat(data: ChatHistoryInterface) {
             contactId: data.contactId,
             role: data.role,
             content: data.content,
+            readedAt: data.role == 'assistant' ? moment().format() : null
         },
     })
 

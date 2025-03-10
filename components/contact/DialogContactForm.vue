@@ -72,7 +72,7 @@ watch(isOpen, (newVal) => {
 // }>()
 
 const emit = defineEmits<{
-    (event: 'onSubmit'): void
+    (event: 'onSubmit', val: ContactInterface): void
 }>()
 
 const editForm = async (values: any) => {
@@ -90,7 +90,7 @@ const editForm = async (values: any) => {
         toast.success(response.message)
         closeDialog()
 
-        emit('onSubmit')
+        emit('onSubmit', response.data)
     }
 }
 
@@ -108,7 +108,7 @@ const createForm = async (values: any) => {
         toast.success(response.message)
         closeDialog()
 
-        emit('onSubmit')
+        emit('onSubmit', response.data)
     }
 }
 
