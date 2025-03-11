@@ -20,7 +20,8 @@ const {
     chatHistories,
 } = useDetailChatState()
 
-const { setIncomingChat, contactActive } = useChatState()
+const { setIncomingChat, contactActive, markChatRead } = useChatState()
+const { $pusher } = useNuxtApp();
 
 let message = ref<string>('')
 let loading = ref<boolean>(false)
@@ -82,6 +83,20 @@ watch(
         }
     }
 )
+
+onMounted(() => {
+  const channel = $pusher.subscribe("chat-channel");
+  channel.bind("new-message", (data: ChatHistoryInterface) => {
+    if(contact.value) {
+        if(data.contactId == contact.value.id) {
+            chatHistories.value.unshift(data)
+            markChatRead(contact.value.id)
+        }
+    }
+  });
+});
+
+
 </script>
 
 <template>

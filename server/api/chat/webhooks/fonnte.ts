@@ -1,12 +1,13 @@
 import { defineEventHandler, getQuery } from 'h3'
 import { z } from 'zod'
-import { createChat } from '~/repository/chatHistoryRepository'
+import { countUnreadedChat, createChat } from '~/repository/chatHistoryRepository'
 import { createContact, findUniquePhone } from '~/repository/contactRepository'
 import { removeTrailingNewlines } from '~/services/gemini-ai/helpers/stringHelper'
 import { askAgen } from '~/services/gemini-ai/repositories/agenRepository'
 import { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
 import { ContactInterface } from '~/types/ContactInterface'
 import { sendWhatsapp } from '~/services/gemini-ai/services/fonnteClient'
+import { pusher } from '~/services/pusher/pusher'
 
 export default defineEventHandler(async (event) => {
     const formData =
@@ -65,25 +66,46 @@ export default defineEventHandler(async (event) => {
         role: 'user',
     }
 
-    await createChat(chatHistory)
+
+    //create chat user and trigger pusher
+    const userChat = await createChat(chatHistory)
+
+    const userChatResource = await chatHistoryResource(userChat);
+
+    await pusher.trigger("chat-channel", "new-message", userChatResource);
 
     const agenResponse = await askAgen(contact.id, message)
 
     const output = removeTrailingNewlines(agenResponse)
 
+    
+    //create agen and trigger pusher
     const agenChatHistory: ChatHistoryInterface = {
         contactId: contact.id,
         content: output,
         role: 'assistant',
     }
 
-    const response = await createChat(agenChatHistory)
+    let agenChat = await createChat(agenChatHistory)
+    const agenChatResource = await chatHistoryResource(agenChat)
+
+    await pusher.trigger("chat-channel", "new-message", agenChatResource);
 
     await sendWhatsapp(sender, output)
 
     return {
         status: 200,
         message: 'Message created succesfully',
-        data: response,
+        data: agenChatResource,
     }
 })
+
+const chatHistoryResource = async (chatHistory: any) => {
+    return {
+        ...chatHistory,
+        contact: {
+            ...chatHistory.contact,
+            unreadCount: await countUnreadedChat(chatHistory.contactId)
+        }
+    }
+}

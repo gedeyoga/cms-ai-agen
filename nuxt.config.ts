@@ -17,4 +17,13 @@ export default defineNuxtConfig({
          */
         componentDir: './components/ui',
     },
+    runtimeConfig: {
+        public: {
+            pusherKey: process.env.PUSHER_KEY,
+            pusherCluster: process.env.PUSHER_CLUSTER,
+        }
+    },
+    plugins: [
+        { src: "~/plugins/pusher.client.ts", mode: "client" }
+    ],
 })

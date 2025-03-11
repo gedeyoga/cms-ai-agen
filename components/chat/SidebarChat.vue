@@ -6,6 +6,7 @@ import type { MessageInterface } from '~/types/MessageInterface'
 import { Icon } from '@iconify/vue'
 import { useChatState } from '~/composables/chatState'
 import SidebarChatSkeleton from './SidebarChatSkeleton.vue'
+const { $pusher } = useNuxtApp();
 
 let contacts = ref<ContactInterface[]>([])
 let search = ref('')
@@ -17,6 +18,8 @@ const {
     setContactActive,
     messages,
     setMessages,
+    setIncomingChat,
+    markChatRead
 } = useChatState()
 let loading = ref<boolean>(false)
 
@@ -69,21 +72,30 @@ watch(incomingChat, (val) => {
             messages.value.splice(index, 1)
         }
 
+        let unreadCount = val.contact?.unreadCount ?? 0
+
+        if(chatActive.value) {
+            unreadCount = chatActive.value.contactId == val.contactId ? 0 : unreadCount
+        }
+
         messages.value.unshift({
             contactId: val.contactId,
             name: val.contact?.name ?? '',
             image: '/images/default-user.png',
             message: val.content,
             createdAt: val.createdAt ?? '',
-            unreadCount: val.contact?.unreadCount ?? 0,
+            unreadCount: unreadCount,
             role: val.role,
         })
     }
 })
 
-const listMessageClicked = (message: MessageInterface, index: number) => {
+const listMessageClicked = async (message: MessageInterface, index: number) => {
     setChatActive(message)
     setContactActive(contacts.value[index])
+    if(message.unreadCount > 0) {
+        markChatRead(contacts.value[index].id)
+    }
     openMessage(true)
 }
 
@@ -95,6 +107,13 @@ const clearSearch = () => {
     search.value = ''
     fetchData()
 }
+
+onMounted(() => {
+    const channel = $pusher.subscribe("chat-channel");
+    channel.bind("new-message", (data: ChatHistoryInterface) => {
+        setIncomingChat(data);
+    });
+})
 
 await fetchData()
 </script>
