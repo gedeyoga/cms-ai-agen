@@ -24,4 +24,7 @@ export default defineNuxtConfig({
         },
     },
     plugins: [{ src: '~/plugins/pusher.client.ts', mode: 'client' }],
+    nitro: {
+        preset: 'vercel'
+    }
 })
