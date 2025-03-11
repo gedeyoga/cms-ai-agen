@@ -21,7 +21,7 @@ const {
 } = useDetailChatState()
 
 const { setIncomingChat, contactActive, markChatRead } = useChatState()
-const { $pusher } = useNuxtApp();
+const { $pusher } = useNuxtApp()
 
 let message = ref<string>('')
 let loading = ref<boolean>(false)
@@ -85,18 +85,16 @@ watch(
 )
 
 onMounted(() => {
-  const channel = $pusher.subscribe("chat-channel");
-  channel.bind("new-message", async (data: ChatHistoryInterface) => {
-    if(contact.value) {
-        if(data.contactId == contact.value.id) {
-            chatHistories.value.unshift(data)
-            await markChatRead(contact.value.id)
+    const channel = $pusher.subscribe('chat-channel')
+    channel.bind('new-message', async (data: ChatHistoryInterface) => {
+        if (contact.value) {
+            if (data.contactId == contact.value.id) {
+                chatHistories.value.unshift(data)
+                await markChatRead(contact.value.id)
+            }
         }
-    }
-  });
-});
-
-
+    })
+})
 </script>
 
 <template>
@@ -156,8 +154,16 @@ onMounted(() => {
                         placeholder="Type message..."
                         :disabled="loadingSendMessage"
                     ></Input>
-                    <Button v-if="message" @click="sendMessage" :disabled="loadingSendMessage">
-                        <Icon v-if="loadingSendMessage == false" icon="mdi:send" :ssr="true"></Icon>
+                    <Button
+                        v-if="message"
+                        @click="sendMessage"
+                        :disabled="loadingSendMessage"
+                    >
+                        <Icon
+                            v-if="loadingSendMessage == false"
+                            icon="mdi:send"
+                            :ssr="true"
+                        ></Icon>
                         <Loader2 v-else class="w-4 h-4 mr-2 animate-spin" />
                     </Button>
                 </div>

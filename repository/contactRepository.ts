@@ -70,7 +70,7 @@ export async function getContactsWithPagination(
             contact.categories = contact.categories.map(
                 (item: any) => item.category
             )
-            contact.unreadCount = contact._count?.chatHistories ?? 0;
+            contact.unreadCount = contact._count?.chatHistories ?? 0
 
             delete contact._count
 

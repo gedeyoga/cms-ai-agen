@@ -6,7 +6,7 @@ import type { MessageInterface } from '~/types/MessageInterface'
 import { Icon } from '@iconify/vue'
 import { useChatState } from '~/composables/chatState'
 import SidebarChatSkeleton from './SidebarChatSkeleton.vue'
-const { $pusher } = useNuxtApp();
+const { $pusher } = useNuxtApp()
 
 let contacts = ref<ContactInterface[]>([])
 let search = ref('')
@@ -19,7 +19,7 @@ const {
     messages,
     setMessages,
     setIncomingChat,
-    markChatRead
+    markChatRead,
 } = useChatState()
 let loading = ref<boolean>(false)
 
@@ -74,8 +74,9 @@ watch(incomingChat, (val) => {
 
         let unreadCount = val.contact?.unreadCount ?? 0
 
-        if(chatActive.value) {
-            unreadCount = chatActive.value.contactId == val.contactId ? 0 : unreadCount
+        if (chatActive.value) {
+            unreadCount =
+                chatActive.value.contactId == val.contactId ? 0 : unreadCount
         }
 
         messages.value.unshift({
@@ -91,13 +92,15 @@ watch(incomingChat, (val) => {
 })
 
 const listMessageClicked = async (message: MessageInterface, index: number) => {
-    let contact = contacts.value.find((contact: ContactInterface) => contact.id == message.contactId)
-    if(contact) {
-        if(message.unreadCount > 0) {
+    let contact = contacts.value.find(
+        (contact: ContactInterface) => contact.id == message.contactId
+    )
+    if (contact) {
+        if (message.unreadCount > 0) {
             markChatRead(contact.id)
         }
         setChatActive(message)
-        setContactActive(contact);
+        setContactActive(contact)
         openMessage(true)
     }
 }
@@ -112,10 +115,10 @@ const clearSearch = () => {
 }
 
 onMounted(() => {
-    const channel = $pusher.subscribe("chat-channel");
-    channel.bind("new-message", (data: ChatHistoryInterface) => {
-        setIncomingChat(data);
-    });
+    const channel = $pusher.subscribe('chat-channel')
+    channel.bind('new-message', (data: ChatHistoryInterface) => {
+        setIncomingChat(data)
+    })
 })
 
 await fetchData()

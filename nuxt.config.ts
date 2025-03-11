@@ -21,9 +21,7 @@ export default defineNuxtConfig({
         public: {
             pusherKey: process.env.PUSHER_KEY,
             pusherCluster: process.env.PUSHER_CLUSTER,
-        }
+        },
     },
-    plugins: [
-        { src: "~/plugins/pusher.client.ts", mode: "client" }
-    ],
+    plugins: [{ src: '~/plugins/pusher.client.ts', mode: 'client' }],
 })

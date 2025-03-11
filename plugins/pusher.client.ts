@@ -1,22 +1,21 @@
-import Pusher from "pusher-js";
+import Pusher from 'pusher-js'
 
 export default defineNuxtPlugin(() => {
+    const config = useRuntimeConfig()
 
-  const config = useRuntimeConfig();
+    if (!config.public.pusherKey) {
+        throw new Error('PUSHER_KEY is not defined')
+    }
 
-  if (!config.public.pusherKey) {
-    throw new Error("PUSHER_KEY is not defined");
-  }
+    if (!config.public.pusherCluster) {
+        throw new Error('PUSHER_CLUSTER is not defined')
+    }
 
-  if (!config.public.pusherCluster) {
-    throw new Error("PUSHER_CLUSTER is not defined");
-  }
+    const pusher = new Pusher(config.public.pusherKey, {
+        cluster: config.public.pusherCluster,
+    })
 
-  const pusher = new Pusher(config.public.pusherKey, {
-    cluster: config.public.pusherCluster
-  });
-
-  return {
-    provide: { pusher },
-  };
-});
+    return {
+        provide: { pusher },
+    }
+})

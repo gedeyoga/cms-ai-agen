@@ -7,8 +7,8 @@ export interface ContactInterface {
     name: string
     status: string
     categories?: CategoryInterface[]
-    chatHistories?: ChatHistoryInterface[],
-    unreadCount?: number,
+    chatHistories?: ChatHistoryInterface[]
+    unreadCount?: number
     createdAt?: Date | null
     updatedAt?: Date | null
 }

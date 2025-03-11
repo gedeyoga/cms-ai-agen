@@ -1,6 +1,9 @@
 import { defineEventHandler, getQuery } from 'h3'
 import { z } from 'zod'
-import { countUnreadedChat, createChat } from '~/repository/chatHistoryRepository'
+import {
+    countUnreadedChat,
+    createChat,
+} from '~/repository/chatHistoryRepository'
 import { createContact, findUniquePhone } from '~/repository/contactRepository'
 import { removeTrailingNewlines } from '~/services/gemini-ai/helpers/stringHelper'
 import { askAgen } from '~/services/gemini-ai/repositories/agenRepository'
@@ -66,19 +69,17 @@ export default defineEventHandler(async (event) => {
         role: 'user',
     }
 
-
     //create chat user and trigger pusher
     const userChat = await createChat(chatHistory)
 
-    const userChatResource = await chatHistoryResource(userChat);
+    const userChatResource = await chatHistoryResource(userChat)
 
-    await pusher.trigger("chat-channel", "new-message", userChatResource);
+    await pusher.trigger('chat-channel', 'new-message', userChatResource)
 
     const agenResponse = await askAgen(contact.id, message)
 
     const output = removeTrailingNewlines(agenResponse)
 
-    
     //create agen and trigger pusher
     const agenChatHistory: ChatHistoryInterface = {
         contactId: contact.id,
@@ -89,7 +90,7 @@ export default defineEventHandler(async (event) => {
     let agenChat = await createChat(agenChatHistory)
     const agenChatResource = await chatHistoryResource(agenChat)
 
-    await pusher.trigger("chat-channel", "new-message", agenChatResource);
+    await pusher.trigger('chat-channel', 'new-message', agenChatResource)
 
     await sendWhatsapp(sender, output)
 
@@ -105,7 +106,7 @@ const chatHistoryResource = async (chatHistory: any) => {
         ...chatHistory,
         contact: {
             ...chatHistory.contact,
-            unreadCount: await countUnreadedChat(chatHistory.contactId)
-        }
+            unreadCount: await countUnreadedChat(chatHistory.contactId),
+        },
     }
 }

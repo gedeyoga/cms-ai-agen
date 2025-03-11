@@ -34,17 +34,17 @@ export function useChatState() {
         const response: any = await $fetch('/api/chat/read-chat', {
             method: 'POST',
             body: {
-                contactId: contactId
+                contactId: contactId,
             },
         })
-    
+
         if (response.status == 200) {
             messages.value = messages.value.map((item: MessageInterface) => {
-                if(item.contactId == contactId) {
-                    item.unreadCount = 0;
+                if (item.contactId == contactId) {
+                    item.unreadCount = 0
                 }
-                return item;
-            });
+                return item
+            })
         }
     }
 
@@ -59,6 +59,6 @@ export function useChatState() {
         contactActive,
         messages,
         setMessages,
-        markChatRead
+        markChatRead,
     }
 }

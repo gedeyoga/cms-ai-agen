@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
         })
 
         schema.parse(data)
-
     } catch (error: any) {
         return createError({
             status: 422,

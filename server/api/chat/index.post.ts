@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
 
     const response = await createChat(chatHistory)
 
-    // await sendWhatsapp(response.contact.phone, message);
+    await sendWhatsapp(response.contact.phone, message)
 
     return {
         status: 200,

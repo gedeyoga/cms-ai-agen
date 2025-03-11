@@ -1,7 +1,7 @@
 import moment from 'moment'
 import prisma from '~/services/prisma/client'
 import type { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
-import { findUniquePhone } from "./contactRepository"
+import { findUniquePhone } from './contactRepository'
 
 export const find = async (id: number) => {
     return prisma.chatHistory.findFirst({
@@ -20,7 +20,7 @@ export async function createChat(data: ChatHistoryInterface) {
             contactId: data.contactId,
             role: data.role,
             content: data.content,
-            readedAt: data.role == 'assistant' ? moment().format() : null
+            readedAt: data.role == 'assistant' ? moment().format() : null,
         },
     })
 
@@ -48,10 +48,10 @@ export async function countUnreadedChat(contactId: number) {
         where: {
             readedAt: null,
             contactId: contactId,
-        }
-    });
+        },
+    })
 
-    return countUnreadedChat;
+    return countUnreadedChat
 }
 
 export async function markUnreadMessagesAsRead(contactId: number) {
@@ -62,8 +62,8 @@ export async function markUnreadMessagesAsRead(contactId: number) {
         },
         data: {
             readedAt: new Date(),
-        }
+        },
     })
 
-    return chatHistories;
+    return chatHistories
 }

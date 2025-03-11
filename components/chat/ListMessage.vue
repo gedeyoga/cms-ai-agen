@@ -53,7 +53,7 @@ const emit = defineEmits<{
                     <div
                         class="px-1.5 py-[1px] text-zinc-950 dark:text-zinc-950 rounded-full bg-black dark:bg-white text-xs"
                     >
-                        {{props.unreadCount}}
+                        {{ props.unreadCount }}
                     </div>
                 </div>
             </div>
