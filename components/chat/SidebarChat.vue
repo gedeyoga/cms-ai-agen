@@ -91,12 +91,15 @@ watch(incomingChat, (val) => {
 })
 
 const listMessageClicked = async (message: MessageInterface, index: number) => {
-    setChatActive(message)
-    setContactActive(contacts.value[index])
-    if(message.unreadCount > 0) {
-        markChatRead(contacts.value[index].id)
+    let contact = contacts.find((contact: ContactInterface) => contact.id == message.contactId)
+    if(contact) {
+        if(message.unreadCount > 0) {
+            await markChatRead(contact.id)
+        }
+        setChatActive(message)
+        setContactActive(contact);
+        openMessage(true)
     }
-    openMessage(true)
 }
 
 const searchData = () => {

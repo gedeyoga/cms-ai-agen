@@ -86,11 +86,11 @@ watch(
 
 onMounted(() => {
   const channel = $pusher.subscribe("chat-channel");
-  channel.bind("new-message", (data: ChatHistoryInterface) => {
+  channel.bind("new-message", async (data: ChatHistoryInterface) => {
     if(contact.value) {
         if(data.contactId == contact.value.id) {
             chatHistories.value.unshift(data)
-            markChatRead(contact.value.id)
+            await markChatRead(contact.value.id)
         }
     }
   });
