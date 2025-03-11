@@ -91,7 +91,7 @@ watch(incomingChat, (val) => {
 })
 
 const listMessageClicked = async (message: MessageInterface, index: number) => {
-    let contact = contacts.find((contact: ContactInterface) => contact.id == message.contactId)
+    let contact = contacts.value.find((contact: ContactInterface) => contact.id == message.contactId)
     if(contact) {
         if(message.unreadCount > 0) {
             await markChatRead(contact.id)
