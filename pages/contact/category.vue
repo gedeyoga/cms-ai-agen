@@ -2,12 +2,15 @@
 import Content from '~/components/layout/Content.vue'
 import Sidebar from '~/components/layout/Sidebar.vue'
 import CategoryList from '~/components/category/CategoryList.vue'
+import { menus } from "~/datas/contactMenu"
+
+
 </script>
 
 <template>
     <Content title="Contact">
         <template #left>
-            <Sidebar title="Menu"></Sidebar>
+            <Sidebar :menus="menus" title="Menu"></Sidebar>
         </template>
         <template #right>
             <div class="mb-6">

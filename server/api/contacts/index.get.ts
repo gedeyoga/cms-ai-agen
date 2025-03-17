@@ -2,6 +2,7 @@ import { defineEventHandler, getQuery } from 'h3'
 import { getContactsWithPagination, list } from '~/repository/contactRepository'
 import { ContactInterface } from '~/types/ContactInterface'
 import { MetaInterface, PaginationInterface } from '~/types/PaginationInterface'
+import { ParameterContactlist } from '~/types/ParameterContactListInterface'
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
@@ -14,15 +15,35 @@ export default defineEventHandler(async (event) => {
     }
 
     if (query.per_page && query.page) {
-        const params = {
+        const pagination = {
             page: parseInt(query.page as string, 10) || 1,
             per_page: parseInt(query.per_page as string, 10) || 10,
             search: query.search + '',
         }
+
+        const categoryIds =
+            typeof query.categoryId == 'string'
+                ? [query.categoryId]
+                : Array.isArray(query.categoryId)
+                  ? query.categoryId
+                  : []
+        const status =
+            typeof query.status == 'string'
+                ? [query.status]
+                : Array.isArray(query.status)
+                  ? query.status
+                  : []
+                  
+        const parameters: ParameterContactlist = {
+            categoryIds: categoryIds,
+            status: status,
+            search: typeof query.search === 'string' ? query.search : undefined,
+        }
+
         const response = await getContactsWithPagination(
-            params.page,
-            params.per_page,
-            params.search
+            pagination.page,
+            pagination.per_page,
+            parameters
         )
         contacts = response.data
         meta = response.meta

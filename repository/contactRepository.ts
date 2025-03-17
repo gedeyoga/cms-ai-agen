@@ -1,5 +1,7 @@
+import type { Status } from '@prisma/client'
 import prisma from '~/services/prisma/client'
 import type { MetaInterface } from '~/types/PaginationInterface'
+import type { ParameterContactlist } from '~/types/ParameterContactListInterface'
 
 export const find = async (id: number) => {
     return prisma.contact.findFirst({
@@ -12,12 +14,16 @@ export const find = async (id: number) => {
 export async function getContactsWithPagination(
     page: number,
     pageSize: number,
-    search?: string
+    parameters?: ParameterContactlist
 ) {
     // Hitung offset
 
     const skip = (page - 1) * pageSize
 
+    const status = parameters?.status?.map((item) => item as Status) ?? []
+    const categories =
+        parameters?.categoryIds?.map((item) => parseInt(item)) ?? []
+        
     // Ambil data kategori dengan pagination
     const contacts = await prisma.contact.findMany({
         skip,
@@ -46,8 +52,20 @@ export async function getContactsWithPagination(
         },
         where: {
             name: {
-                contains: search,
+                contains: parameters?.search,
             },
+
+            status: status.length > 0 ? { in: status } : {},
+            categories:
+                categories.length > 0
+                    ? {
+                          some: {
+                              categoryId: {
+                                  in: categories,
+                              },
+                          },
+                      }
+                    : {},
         },
         orderBy: { id: 'desc' }, // Urutkan berdasarkan tanggal terbaru (opsional)
     })

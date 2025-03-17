@@ -26,6 +26,9 @@ import { dialogState } from '~/composables/dialog'
 import { useFilters } from '~/composables/useFilters'
 import { useAlertDialog } from '~/composables/alertDialog'
 import { toast } from 'vue-sonner'
+import { Icon } from '@iconify/vue/dist/iconify.js'
+import EmptyState from '../global/EmptyState.vue'
+import LoadingTableState from '../global/LoadingTableState.vue'
 
 let meta = ref<MetaInterface>({
     currentPage: 1,
@@ -35,6 +38,7 @@ let meta = ref<MetaInterface>({
 })
 
 let search = ref<string | number>('')
+let loading = ref<boolean>(false)
 
 const { openDialog } = dialogState()
 const { formatDate } = useFilters()
@@ -42,6 +46,8 @@ const { formatDate } = useFilters()
 let categories = ref<CategoryInterface[]>([])
 
 const fetchData = async () => {
+    categories.value = []
+    loading.value = true
     const response: any = await $fetch('/api/categories', {
         query: {
             search: search.value,
@@ -49,6 +55,7 @@ const fetchData = async () => {
             page: meta.value.currentPage,
         },
     })
+    loading.value = false
 
     if (response.status == 200) {
         meta.value = response.meta
@@ -130,7 +137,7 @@ onMounted(async () => {
                     openDialog()
                 }
             "
-            >Create</Button
+            ><Icon icon="mdi:add" :ssr="true"></Icon>Create</Button
         >
     </div>
     <Table>
@@ -165,14 +172,33 @@ onMounted(async () => {
                                     openDialog()
                                 }
                             "
-                            >Edit</Button
+                        >
+                            <Icon icon="mdi:edit" :ssr="true"></Icon>
+                            Edit</Button
                         >
                         <Button
                             @click="handleDelete(parseInt(category.id + ''))"
                             variant="destructive"
-                            >Delete</Button
                         >
+                            <Icon icon="mdi:delete" :ssr="true"></Icon
+                        ></Button>
                     </div>
+                </TableCell>
+            </TableRow>
+
+            <TableRow v-if="loading">
+                <TableCell colspan="6">
+                    <LoadingTableState></LoadingTableState>
+                </TableCell>
+            </TableRow>
+            <TableRow
+                v-if="categories.length == 0 && loading == false"
+                class="border-gray-800"
+            >
+                <TableCell colspan="6">
+                    <EmptyState :icon="'mdi:account-tag-outline'">
+                        <p class="text-xl text-zinc-400">No data category</p>
+                    </EmptyState>
                 </TableCell>
             </TableRow>
         </TableBody>

@@ -26,8 +26,22 @@ import { dialogState } from '~/composables/dialog'
 import { useFilters } from '~/composables/useFilters'
 import { useAlertDialog } from '~/composables/alertDialog'
 import { toast } from 'vue-sonner'
-import type { CategoryInterface } from '~/types/CategoryInterface'
 import { Badge } from '../ui/badge'
+import LoadingTableState from '../global/LoadingTableState.vue'
+import EmptyState from '../global/EmptyState.vue'
+import type { CategoryInterface } from '~/types/CategoryInterface'
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { Icon } from '@iconify/vue/dist/iconify.js'
+import contactStatus from '~/datas/contactStatus'
+import { filterFns } from '@tanstack/vue-table'
 
 let meta = ref<MetaInterface>({
     currentPage: 1,
@@ -37,6 +51,10 @@ let meta = ref<MetaInterface>({
 })
 
 let search = ref<string | number>('')
+let categoryIds = ref<string[]>([])
+let statuses = ref<string[]>([])
+let loading = ref<boolean>(false)
+let categories = ref<CategoryInterface[]>([])
 
 const { openDialog } = dialogState()
 const { formatDate } = useFilters()
@@ -44,13 +62,19 @@ const { formatDate } = useFilters()
 let contacts = ref<ContactInterface[]>([])
 
 const fetchData = async () => {
+    contacts.value = []
+    loading.value = true
+
     const response: any = await $fetch('/api/contacts', {
         query: {
             search: search.value,
             per_page: meta.value.pageSize,
             page: meta.value.currentPage,
+            categoryId: categoryIds.value,
+            status: statuses.value,
         },
     })
+    loading.value = false
 
     if (response.status == 200) {
         meta.value = response.meta
@@ -122,18 +146,28 @@ const searchData = () => {
     meta.value.currentPage = 1
     fetchData()
 }
+const fetchCategory = async () => {
+    loading.value = true
+    const response = await $fetch('/api/categories', {
+        method: 'GET',
+    })
+    loading.value = false
+
+    categories.value = response.data.map((category: any) => ({
+        ...category,
+        createdAt: category.createdAt ? new Date(category.createdAt) : null,
+        updatedAt: category.updatedAt ? new Date(category.updatedAt) : null,
+    }))
+}
+
 onMounted(async () => {
+    await fetchCategory()
     await fetchData()
 })
 </script>
 
 <template>
-    <div class="flex justify-between mb-5">
-        <div class="flex w-full max-w-sm items-center gap-1.5">
-            <Input v-model="search" type="text" placeholder="Search..." />
-            <Button @click="searchData" variant="outline"> Search </Button>
-        </div>
-
+    <div class="flex justify-end mb-5">
         <Button
             @click="
                 () => {
@@ -141,11 +175,69 @@ onMounted(async () => {
                     openDialog()
                 }
             "
-            >Create</Button
+        >
+            <Icon icon="mdi:add" :ssr="true"></Icon> Create</Button
         >
     </div>
+    <div class="grid grid-cols-2 mb-5 items-end">
+        <div class="flex gap-x-3">
+            <div class="grow">
+                <label for="">Category</label>
+                <Select v-model="categoryIds" multiple>
+                    <SelectTrigger>
+                        <SelectValue
+                            class="text-white"
+                            placeholder="Choose category"
+                        />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem
+                                v-for="(category, key) in categories"
+                                :value="category.id + ''"
+                                :key="key"
+                            >
+                                {{ category.name }}
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div class="grow">
+                <label for="">Status</label>
+                <Select v-model="statuses" multiple>
+                    <SelectTrigger>
+                        <SelectValue
+                            class="text-white"
+                            placeholder="Choose status"
+                        />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem
+                                v-for="(status, key) in contactStatus"
+                                :value="status.value + ''"
+                                :key="key"
+                            >
+                                {{ status.name }}
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
+
+        <div class="flex justify-end">
+            <div class="flex w-full max-w-sm items-center gap-1.5">
+                <Input v-model="search" type="text" placeholder="Search..." />
+                <Button @click="searchData" variant="outline">
+                    <Icon icon="mdi:search" :ssr="true"></Icon> Search
+                </Button>
+            </div>
+        </div>
+    </div>
     <Table>
-        <!-- <TableCaption>A list of your recent invoices.</TableCaption> -->
         <TableHeader>
             <TableRow class="border-gray-800">
                 <TableHead> Name </TableHead>
@@ -192,14 +284,30 @@ onMounted(async () => {
                                     openDialog()
                                 }
                             "
-                            >Edit</Button
                         >
+                            <Icon icon="mdi:edit" :ssr="true"></Icon> Edit
+                        </Button>
                         <Button
                             @click="handleDelete(parseInt(contact.id + ''))"
                             variant="destructive"
-                            >Delete</Button
-                        >
+                            ><Icon icon="mdi:delete" :ssr="true"></Icon
+                        ></Button>
                     </div>
+                </TableCell>
+            </TableRow>
+            <TableRow v-if="loading">
+                <TableCell colspan="6">
+                    <LoadingTableState></LoadingTableState>
+                </TableCell>
+            </TableRow>
+            <TableRow
+                v-if="contacts.length == 0 && loading == false"
+                class="border-gray-800"
+            >
+                <TableCell colspan="6">
+                    <EmptyState :icon="'mdi:account-box-outline'">
+                        <p class="text-xl text-zinc-400">No data contact</p>
+                    </EmptyState>
                 </TableCell>
             </TableRow>
         </TableBody>

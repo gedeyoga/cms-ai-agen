@@ -15,7 +15,7 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  categories  ContactCategory[]
+  categories    ContactCategory[]
   chatHistories ChatHistory[]
 
   @@map("contact")
@@ -28,6 +28,7 @@ model Category {
   updatedAt DateTime @updatedAt
 
   contacts ContactCategory[]
+
   @@map("category")
 }
 
@@ -36,12 +37,11 @@ model ContactCategory {
   contactId  Int
   categoryId Int
 
-  contact  Contact  @relation(fields: [contactId], references: [id], map: "fk_contactcategory_contact")
-  category Category @relation(fields: [categoryId], references: [id], map: "fk_contactcategory_category")
+  contact  Contact  @relation(fields: [contactId], references: [id], map: "fk_contactcategory_contact", onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], map: "fk_contactcategory_category", onDelete: Cascade)
 
   @@index([contactId, categoryId])
   @@map("contactcategory")
-
 }
 
 enum Status {
@@ -55,14 +55,25 @@ enum Status {
 }
 
 model ChatHistory {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   contactId Int
   role      String
-  content   String?  @db.Text
+  content   String?   @db.Text
   readedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("chathistory")
+}
+
+model User {
+  id        String  @id @default(uuid()) // Gunakan UUID sebagai primary key
+  name      String
+  email     String  @unique
+  phone     String  @unique
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  contact Contact @relation(fields: [contactId], references: [id])
-  @@map("chathistory")
 }

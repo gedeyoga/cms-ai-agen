@@ -136,7 +136,7 @@ const onSubmit = async (values: any) => {
                             type="button"
                             variant="secondary"
                         >
-                            Batal
+                            Cancel
                         </Button>
                     </DialogClose>
 

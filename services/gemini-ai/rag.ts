@@ -8,7 +8,6 @@ import { init } from '~/services/gemini-ai/services/pinecone'
 import { model } from '~/services/gemini-ai/aiAgen'
 
 export async function getInformasiProductKonek(prompting: string) {
-    console.log(prompting)
 
     try {
         const vectorStore = await init()
@@ -34,7 +33,6 @@ export async function getInformasiProductKonek(prompting: string) {
 
         return data
     } catch (error) {
-        console.log('error', error)
         return 'Error'
     }
 }

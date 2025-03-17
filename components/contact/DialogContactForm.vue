@@ -33,6 +33,8 @@ import * as z from 'zod'
 import { dialogState } from '~/composables/dialog'
 import type { ContactInterface } from '~/types/ContactInterface'
 import type { CategoryInterface } from '~/types/CategoryInterface'
+import { Loader2 } from 'lucide-vue-next'
+import contactStatus from '~/datas/contactStatus'
 
 const formSchema = toTypedSchema(
     z.object({
@@ -57,6 +59,8 @@ let data = ref({
     ...props.contact,
 })
 
+let loading = ref<boolean>(false)
+
 watch(isOpen, (newVal) => {
     const categories = props.contact.categories ? props.contact.categories : []
     data.value = {
@@ -76,6 +80,7 @@ const emit = defineEmits<{
 }>()
 
 const editForm = async (values: any) => {
+    loading.value = true
     const response: any = await $fetch('/api/contacts/' + data.value.id, {
         method: 'PUT',
         body: {
@@ -86,6 +91,8 @@ const editForm = async (values: any) => {
             categoryId: values.categoryId.map((id: string) => parseInt(id)),
         },
     })
+    loading.value = false
+
     if (response.status == 200) {
         toast.success(response.message)
         closeDialog()
@@ -95,6 +102,7 @@ const editForm = async (values: any) => {
 }
 
 const createForm = async (values: any) => {
+    loading.value = true
     const response: any = await $fetch('/api/contacts', {
         method: 'POST',
         body: {
@@ -104,6 +112,8 @@ const createForm = async (values: any) => {
             categoryId: values.categoryId.map((id: string) => parseInt(id)),
         },
     })
+    loading.value = false
+
     if (response.status == 200) {
         toast.success(response.message)
         closeDialog()
@@ -132,37 +142,6 @@ const fetchCategory = async () => {
         updatedAt: category.updatedAt ? new Date(category.updatedAt) : null,
     }))
 }
-
-const statuses = [
-    {
-        name: 'New',
-        value: 'NEW',
-    },
-    {
-        name: 'Hot',
-        value: 'HOT',
-    },
-    {
-        name: 'Warm',
-        value: 'WARM',
-    },
-    {
-        name: 'Cold',
-        value: 'COLD',
-    },
-    {
-        name: 'Follow Up',
-        value: 'FOLLOWUP',
-    },
-    {
-        name: 'Lost',
-        value: 'LOST',
-    },
-    {
-        name: 'Active',
-        value: 'ACTIVE',
-    },
-]
 
 fetchCategory()
 </script>
@@ -273,7 +252,9 @@ fetchCategory()
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectItem
-                                            v-for="(status, key) in statuses"
+                                            v-for="(
+                                                status, key
+                                            ) in contactStatus"
                                             :value="status.value + ''"
                                             :key="key"
                                         >
@@ -290,15 +271,24 @@ fetchCategory()
                 <DialogFooter>
                     <DialogClose as-child>
                         <Button
+                            :disabled="loading"
                             @click="closeDialog"
                             type="button"
                             variant="secondary"
                         >
-                            Batal
+                            <Loader2
+                                v-if="loading"
+                                class="w-4 h-4 mr-2 animate-spin"
+                            />
+                            Cancel
                         </Button>
                     </DialogClose>
 
-                    <Button type="submit" form="dialogForm">
+                    <Button :disabled="loading" type="submit" form="dialogForm">
+                        <Loader2
+                            v-if="loading"
+                            class="w-4 h-4 mr-2 animate-spin"
+                        />
                         <span v-if="data.id">Edit</span>
                         <span v-else>Create</span>
                     </Button>

@@ -14,8 +14,6 @@ export function useAlertDialog() {
     const show = (options: AlertDialogOptions) => {
         dialogOptions.value = options
         isOpen.value = true
-
-        console.log('show')
     }
 
     const close = () => {

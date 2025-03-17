@@ -2,28 +2,12 @@
 import type { MenuInterface } from '../interfaces/globalInterface'
 
 const props = defineProps<{
-    title: string
+    title: string,
+    menus: MenuInterface[]
 }>()
-
-const menus = ref<MenuInterface[]>([
-    {
-        label: 'Contact',
-        icon: '',
-        link: '/contact',
-        children: [],
-    },
-    {
-        label: 'Category',
-        icon: '',
-        link: '/contact/category',
-        children: [],
-    },
-])
 
 const route = useRoute()
 const activeRoute = route.path
-
-console.log(activeRoute)
 </script>
 
 <template>
@@ -32,7 +16,7 @@ console.log(activeRoute)
             {{ props.title }}
         </h3>
         <ul>
-            <li class="mb-2" v-for="(menu, key) in menus" :key="key">
+            <li class="mb-2" v-for="(menu, key) in props.menus" :key="key">
                 <RouterLink
                     :to="menu.link"
                     class="block py-1 hover:bg-white hover:bg-opacity-15 px-4 rounded-md"
