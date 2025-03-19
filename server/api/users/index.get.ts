@@ -1,8 +1,5 @@
 import { defineEventHandler, getQuery } from 'h3'
-import {
-    getUsersWithPagination,
-    list,
-} from '~/repository/userRepository'
+import { getUsersWithPagination, list } from '~/repository/userRepository'
 import { MetaInterface, PaginationInterface } from '~/types/PaginationInterface'
 import { UserInterface } from '~/types/UserInterface'
 

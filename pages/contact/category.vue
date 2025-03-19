@@ -2,9 +2,7 @@
 import Content from '~/components/layout/Content.vue'
 import Sidebar from '~/components/layout/Sidebar.vue'
 import CategoryList from '~/components/category/CategoryList.vue'
-import { menus } from "~/datas/contactMenu"
-
-
+import { menus } from '~/datas/contactMenu'
 </script>
 
 <template>

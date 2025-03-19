@@ -1,4 +1,4 @@
-import type { MenuInterface } from "~/components/interfaces/globalInterface";
+import type { MenuInterface } from '~/components/interfaces/globalInterface'
 
 export const menus = ref<MenuInterface[]>([
     {

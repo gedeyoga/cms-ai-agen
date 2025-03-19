@@ -2,7 +2,12 @@
 export default defineNuxtConfig({
     compatibilityDate: '2024-11-01',
     devtools: { enabled: true },
-    modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxtjs/color-mode' ,'@sidebase/nuxt-auth'],
+    modules: [
+        '@nuxtjs/tailwindcss',
+        'shadcn-nuxt',
+        '@nuxtjs/color-mode',
+        '@sidebase/nuxt-auth',
+    ],
     colorMode: {
         classSuffix: '', // Hapus suffix agar class menjadi 'dark' saja
     },
@@ -26,18 +31,17 @@ export default defineNuxtConfig({
     },
     plugins: [{ src: '~/plugins/pusher.client.ts', mode: 'client' }],
     nitro: {
-        preset: 'vercel'
+        preset: 'vercel',
     },
     auth: {
         isEnabled: true,
         disableServerSideAuth: false,
         globalAppMiddleware: true,
-        provider: { 
+        provider: {
             type: 'authjs',
             trustHost: false,
             defaultProvider: 'credentials',
-            addDefaultCallbackUrl: true
+            addDefaultCallbackUrl: true,
         },
-    }
-        
+    },
 })

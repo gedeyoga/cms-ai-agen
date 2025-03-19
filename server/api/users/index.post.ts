@@ -5,7 +5,6 @@ import { z } from 'zod'
 //@ts-ignore
 import bcrypt from 'bcrypt'
 
-
 export default defineEventHandler(async (event) => {
     const { name, email, password, phone } = await readBody(event)
 
@@ -20,7 +19,10 @@ export default defineEventHandler(async (event) => {
         const schema = z.object({
             name: z.string().min(2, 'Name minimum at leats 2 characters'),
             email: z.string().min(2).email(),
-            phone: z.string().min(10, 'Phone must contain at least 10 character(s)').max(16, 'Phone must contain at most 16 character(s)'),
+            phone: z
+                .string()
+                .min(10, 'Phone must contain at least 10 character(s)')
+                .max(16, 'Phone must contain at most 16 character(s)'),
             password: z.string().min(8),
         })
         schema.parse(data)
@@ -42,13 +44,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const salt = await bcrypt.genSalt(10)
-    const hashPassword = await bcrypt.hash(password, salt);
+    const hashPassword = await bcrypt.hash(password, salt)
 
     const response = await createUser({
         name,
         email,
         phone,
-        password: hashPassword
+        password: hashPassword,
     })
 
     return {

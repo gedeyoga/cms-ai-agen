@@ -105,7 +105,7 @@ export async function updateUser(id: string, data: any) {
         phone: data.phone,
     }
 
-    if(data.password ) {
+    if (data.password) {
         dataForm.password = data.password
     }
 
@@ -121,7 +121,7 @@ export async function updateUser(id: string, data: any) {
             phone: true,
             createdAt: true,
             updatedAt: true,
-        }
+        },
     })
 
     return user
@@ -145,6 +145,14 @@ export async function findUniqueEmail(
 
     if (userId != null) {
         user = await prisma.user.findFirst({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                createdAt: true,
+                updatedAt: true,
+            },
             where: {
                 phone: email,
                 id: { not: userId }, // Pastikan tidak mengecek user yang sedang diedit
@@ -152,6 +160,14 @@ export async function findUniqueEmail(
         })
     } else {
         user = await prisma.user.findUnique({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                createdAt: true,
+                updatedAt: true,
+            },
             where: {
                 email: email,
             },
@@ -164,20 +180,23 @@ export async function findUniqueEmail(
 export async function findUniquePhoneUser(phone: string) {
     const user = await prisma.user.findUnique({
         where: {
-            phone: phone
-        }
+            phone: phone,
+        },
     })
 
     return user
 }
 
-export async function createOtpUser(userId: string, otp: string , expiredAt: string){
-
+export async function createOtpUser(
+    userId: string,
+    otp: string,
+    expiredAt: string
+) {
     await prisma.userOtp.deleteMany({
         where: {
             userId: userId,
-        }
-    });
+        },
+    })
 
     const userOtp = await prisma.userOtp.create({
         select: {
@@ -188,8 +207,8 @@ export async function createOtpUser(userId: string, otp: string , expiredAt: str
         data: {
             userId: userId,
             otp: otp,
-            expiredAt: expiredAt
-        }
+            expiredAt: expiredAt,
+        },
     })
 
     return userOtp
@@ -199,12 +218,12 @@ export async function findOtpUser(phone: string) {
     const userOtp = await prisma.userOtp.findFirst({
         where: {
             user: {
-                phone: phone
-            }
+                phone: phone,
+            },
         },
         include: {
-            user: true
-        }
+            user: true,
+        },
     })
 
     return userOtp

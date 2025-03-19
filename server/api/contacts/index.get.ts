@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
                 : Array.isArray(query.status)
                   ? query.status
                   : []
-                  
+
         const parameters: ParameterContactlist = {
             categoryIds: categoryIds,
             status: status,

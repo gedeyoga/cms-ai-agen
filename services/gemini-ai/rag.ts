@@ -8,7 +8,6 @@ import { init } from '~/services/gemini-ai/services/pinecone'
 import { model } from '~/services/gemini-ai/aiAgen'
 
 export async function getInformasiProductKonek(prompting: string) {
-
     try {
         const vectorStore = await init()
         const prompt = ChatPromptTemplate.fromTemplate(`

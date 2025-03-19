@@ -23,7 +23,7 @@ export async function getContactsWithPagination(
     const status = parameters?.status?.map((item) => item as Status) ?? []
     const categories =
         parameters?.categoryIds?.map((item) => parseInt(item)) ?? []
-        
+
     // Ambil data kategori dengan pagination
     const contacts = await prisma.contact.findMany({
         skip,

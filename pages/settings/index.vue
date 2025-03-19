@@ -3,7 +3,6 @@ import Content from '~/components/layout/Content.vue'
 import Sidebar from '~/components/layout/Sidebar.vue'
 import UserList from '~/components/user/UserList.vue'
 import { menus } from '~/datas/settingMenu'
-
 </script>
 
 <template>

@@ -3,11 +3,9 @@ import { Button } from '@/components/ui/button'
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog'
 import {
     Form,
@@ -20,11 +18,11 @@ import {
 
 import { Input } from '@/components/ui/input'
 import { toTypedSchema } from '@vee-validate/zod'
-import { useFormValues } from 'vee-validate'
 import { toast } from 'vue-sonner'
 import * as z from 'zod'
 import { dialogState } from '~/composables/dialog'
 import type { CategoryInterface } from '~/types/CategoryInterface'
+import { Loader2 } from 'lucide-vue-next'
 
 const formSchema = toTypedSchema(
     z.object({
@@ -42,6 +40,7 @@ const props = defineProps({
 })
 
 let data = ref({ ...props.category })
+let loading = ref<boolean>(false)
 
 watch(isOpen, (newVal) => {
     data.value = { ...props.category }
@@ -52,6 +51,8 @@ const emit = defineEmits<{
 }>()
 
 const editForm = async (values: any) => {
+    loading.value = true
+
     const response: any = await $fetch('/api/categories/' + data.value.id, {
         method: 'PUT',
         body: {
@@ -59,6 +60,8 @@ const editForm = async (values: any) => {
             name: values.name,
         },
     })
+    loading.value = false
+
     if (response.status == 200) {
         toast.success(response.message)
         closeDialog()
@@ -68,12 +71,15 @@ const editForm = async (values: any) => {
 }
 
 const createForm = async (values: any) => {
+    loading.value = true
     const response: any = await $fetch('/api/categories', {
         method: 'POST',
         body: {
             name: values.name,
         },
     })
+    loading.value = false
+
     if (response.status == 200) {
         toast.success(response.message)
         closeDialog()
@@ -132,15 +138,24 @@ const onSubmit = async (values: any) => {
                 <DialogFooter>
                     <DialogClose as-child>
                         <Button
+                            :disabled="loading"
                             @click="closeDialog"
                             type="button"
                             variant="secondary"
                         >
+                            <Loader2
+                                v-if="loading"
+                                class="w-4 h-4 mr-2 animate-spin"
+                            />
                             Cancel
                         </Button>
                     </DialogClose>
 
                     <Button type="submit" form="dialogForm">
+                        <Loader2
+                            v-if="loading"
+                            class="w-4 h-4 mr-2 animate-spin"
+                        />
                         <span v-if="data.id">Edit</span>
                         <span v-else>Create</span>
                     </Button>

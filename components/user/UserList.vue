@@ -267,8 +267,5 @@ onMounted(async () => {
         </Pagination>
     </div>
 
-    <DialogUserForm
-        :user="dataUser"
-        @onSubmit="fetchData"
-    ></DialogUserForm>
+    <DialogUserForm :user="dataUser" @onSubmit="fetchData"></DialogUserForm>
 </template>

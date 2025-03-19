@@ -11,6 +11,10 @@ import { ChatHistoryInterface } from '~/types/ChatHistoryInterface'
 import { ContactInterface } from '~/types/ContactInterface'
 import { sendWhatsapp } from '~/services/gemini-ai/services/fonnteClient'
 import { pusher } from '~/services/pusher/pusher'
+import { findValidationToken } from '~/repository/userRegistrationRepository'
+import { UserRegistrationInterface } from '~/types/UserRegistrationInterface'
+import { createUser, findUniqueEmail } from '~/repository/userRepository'
+import { generateBase64Token, passwordGenerator } from '~/shared/codeCreation'
 
 export default defineEventHandler(async (event) => {
     const formData =
@@ -51,6 +55,32 @@ export default defineEventHandler(async (event) => {
         })
     }
 
+    let data
+
+    if (message.startsWith('registration:')) {
+        data = await registrationUser(sender, message)
+    } else {
+        data = await sendingMessage(sender, message)
+    }
+
+    return {
+        status: 200,
+        message: 'Message created succesfully',
+        data: data,
+    }
+})
+
+const chatHistoryResource = async (chatHistory: any) => {
+    return {
+        ...chatHistory,
+        contact: {
+            ...chatHistory.contact,
+            unreadCount: await countUnreadedChat(chatHistory.contactId),
+        },
+    }
+}
+
+const sendingMessage = async (sender: string, message: string) => {
     let contact = await findUniquePhone(sender)
 
     if (contact == null) {
@@ -94,19 +124,54 @@ export default defineEventHandler(async (event) => {
 
     await sendWhatsapp(sender, output)
 
-    return {
-        status: 200,
-        message: 'Message created succesfully',
-        data: agenChatResource,
-    }
-})
+    return agenChatResource
+}
 
-const chatHistoryResource = async (chatHistory: any) => {
-    return {
-        ...chatHistory,
-        contact: {
-            ...chatHistory.contact,
-            unreadCount: await countUnreadedChat(chatHistory.contactId),
-        },
+const registrationUser = async (sender: string, message: string) => {
+    const messageSplit = message.split(':')
+
+    if (messageSplit.length != 2) {
+        console.log('sdfhnsdl3')
+        await sendWhatsapp(sender, 'Registration token is not valid')
+        return null
     }
+
+    const validationToken = messageSplit[1]
+
+    const userRegistration: UserRegistrationInterface | null =
+        await findValidationToken(validationToken)
+
+    if (!userRegistration) {
+        console.log('sdfhnsdl')
+        await sendWhatsapp(sender, 'Registration token is not valid')
+        return null
+    }
+
+    if (sender != userRegistration.phone) {
+        console.log('phone')
+        await sendWhatsapp(
+            sender,
+            'Send this code using whatsapp number : ' + userRegistration.phone
+        )
+        return null
+    }
+
+    const dataUser = {
+        name: userRegistration.name,
+        phone: userRegistration.phone,
+        email: userRegistration.email,
+        password: await passwordGenerator(generateBase64Token(5)),
+    }
+
+    let user = await findUniqueEmail(userRegistration.email)
+    if (!user) {
+        user = await createUser(dataUser)
+    }
+    await sendWhatsapp(
+        sender,
+        'Your account is now active! Please log in with WhatsApp to access the website using whatsapp number : ' +
+            user.phone
+    )
+
+    return user
 }

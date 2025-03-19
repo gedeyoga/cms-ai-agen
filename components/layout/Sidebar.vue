@@ -2,7 +2,7 @@
 import type { MenuInterface } from '../interfaces/globalInterface'
 
 const props = defineProps<{
-    title: string,
+    title: string
     menus: MenuInterface[]
 }>()
 

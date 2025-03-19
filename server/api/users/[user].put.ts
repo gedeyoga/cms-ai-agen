@@ -19,16 +19,19 @@ export default defineEventHandler(async (event) => {
         const schema = z.object({
             name: z.string().min(2, 'Name minimum at leats 2 characters'),
             email: z.string().min(2).email(),
-            phone: z.string().min(10, 'Phone must contain at least 10 character(s)').max(16, 'Phone must contain at most 16 character(s)'),
-            password: z.string().optional().refine((value) => {
-                return !value || value.length >= 8;
-            })
+            phone: z
+                .string()
+                .min(10, 'Phone must contain at least 10 character(s)')
+                .max(16, 'Phone must contain at most 16 character(s)'),
+            password: z
+                .string()
+                .optional()
+                .refine((value) => {
+                    return !value || value.length >= 8
+                }),
         })
 
-        const checkEmail = await findUniqueEmail(
-            email,
-            params.user
-        )
+        const checkEmail = await findUniqueEmail(email, params.user)
 
         if (checkEmail != null) {
             return createError({
@@ -46,21 +49,18 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    if(password) {
+    if (password) {
         const salt = await bcrypt.genSalt(10)
-        const hashPassword = await bcrypt.hash(password, salt);
+        const hashPassword = await bcrypt.hash(password, salt)
         password = hashPassword
     }
 
-    const response = await updateUser(
-        params.user,
-        {
-            name,
-            email,
-            password,
-            phone,
-        }
-    )
+    const response = await updateUser(params.user, {
+        name,
+        email,
+        password,
+        phone,
+    })
 
     return {
         status: 200,

@@ -7,9 +7,9 @@ const forwardedProps = useForwardProps(props)
 </script>
 
 <template>
-  <Primitive v-bind="forwardedProps">
-    <slot>
-      <Minus class="w-2" />
-    </slot>
-  </primitive>
+    <Primitive v-bind="forwardedProps">
+        <slot>
+            <Minus class="w-2" />
+        </slot>
+    </Primitive>
 </template>

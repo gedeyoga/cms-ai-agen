@@ -1,4 +1,4 @@
 export interface AuthWhatsappDataInterface {
-    phone: string | null,
+    phone: string | null
     expiredAt: string | null
 }

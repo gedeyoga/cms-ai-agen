@@ -92,3 +92,13 @@ model UserOtp {
 
   @@map("userotp")
 }
+
+model UserRegistration {
+  id String @id @default(uuid())
+  name String
+  email String
+  phone String 
+  validationToken String 
+
+  @@map("user_registration")
+}

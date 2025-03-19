@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import Navigation from './Navigation.vue'
 
-import { useAuth } from '#imports';
-import { Icon } from '@iconify/vue/dist/iconify.js';
+import { useAuth } from '#imports'
+import { Icon } from '@iconify/vue/dist/iconify.js'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from '@/components/ui/popover'
 
-const { data , signOut } = useAuth()
+const { data, signOut } = useAuth()
 
 const logOut = () => {
     const { show } = useAlertDialog()
@@ -18,12 +18,11 @@ const logOut = () => {
         title: 'Confirmation',
         content: 'Are you sure want to logout?',
         onConfirm: async () => {
-            await signOut({ callbackUrl: '/login'})
+            await signOut({ callbackUrl: '/login' })
         },
         onCancel: () => {},
     })
 }
-
 </script>
 <template>
     <div class="flex justify-between px-10 py-6">
@@ -43,7 +42,11 @@ const logOut = () => {
             <PopoverContent class="max-w-[250px] mt-2 mr-10 px-2 py-2">
                 <ul>
                     <li class="">
-                        <a @click="logOut" href="javascript:void(0)" class="hover:bg-opacity-15 rounded-md flex justify-between items-center py-1 hover:bg-white px-3">
+                        <a
+                            @click="logOut"
+                            href="javascript:void(0)"
+                            class="hover:bg-opacity-15 rounded-md flex justify-between items-center py-1 hover:bg-white px-3"
+                        >
                             <span>Logout</span>
                             <Icon icon="mdi:logout" :ssr="true"></Icon>
                         </a>
