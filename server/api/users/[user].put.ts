@@ -1,6 +1,7 @@
 import { defineEventHandler, getQuery } from 'h3'
 import { z } from 'zod'
 import { updateUser, findUniqueEmail } from '~/repository/userRepository'
+//@ts-ignore
 import bcrypt from 'bcrypt'
 
 export default defineEventHandler(async (event) => {
@@ -18,7 +19,7 @@ export default defineEventHandler(async (event) => {
         const schema = z.object({
             name: z.string().min(2, 'Name minimum at leats 2 characters'),
             email: z.string().min(2).email(),
-            phone: z.string().min(10, 'Phone minimum at least 10 characters'),
+            phone: z.string().min(10, 'Phone must contain at least 10 character(s)').max(16, 'Phone must contain at most 16 character(s)'),
             password: z.string().optional().refine((value) => {
                 return !value || value.length >= 8;
             })

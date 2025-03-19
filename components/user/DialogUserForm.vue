@@ -47,7 +47,7 @@ const formSchema = toTypedSchema(
     z.object({
         name: z.string().min(2),
         email: z.string().min(2).email(),
-        phone: z.string().min(10),
+        phone: z.string().min(10, 'Phone must contain at least 10 character(s)').max(16, 'Phone must contain at most 16 character(s)'),
         password: props.user.id ? z.string().min(8) : z.string().optional().refine((value) => {
             return !value || value.length >= 8;
         } , 'Min 8 characters'),

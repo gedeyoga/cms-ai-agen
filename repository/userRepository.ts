@@ -160,3 +160,52 @@ export async function findUniqueEmail(
 
     return user
 }
+
+export async function findUniquePhoneUser(phone: string) {
+    const user = await prisma.user.findUnique({
+        where: {
+            phone: phone
+        }
+    })
+
+    return user
+}
+
+export async function createOtpUser(userId: string, otp: string , expiredAt: string){
+
+    await prisma.userOtp.deleteMany({
+        where: {
+            userId: userId,
+        }
+    });
+
+    const userOtp = await prisma.userOtp.create({
+        select: {
+            userId: true,
+            expiredAt: true,
+            createdAt: true,
+        },
+        data: {
+            userId: userId,
+            otp: otp,
+            expiredAt: expiredAt
+        }
+    })
+
+    return userOtp
+}
+
+export async function findOtpUser(phone: string) {
+    const userOtp = await prisma.userOtp.findFirst({
+        where: {
+            user: {
+                phone: phone
+            }
+        },
+        include: {
+            user: true
+        }
+    })
+
+    return userOtp
+}

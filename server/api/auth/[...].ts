@@ -1,13 +1,15 @@
 import { NuxtAuthHandler } from '#auth'
 import Credentials from 'next-auth/providers/credentials'
 import { z, ZodError } from 'zod'
-import { findUniqueEmail } from '~/repository/userRepository'
+import { findOtpUser, findUniqueEmail, findUniquePhoneUser } from '~/repository/userRepository'
 // @ts-ignore
 import bcrypt from 'bcrypt'
+import moment from 'moment'
 
 export default NuxtAuthHandler({
   secret: useRuntimeConfig().authSecret,
   providers: [
+    // @ts-ignore
     Credentials.default({
         id: 'credentials',
         name: 'credentials',
@@ -38,15 +40,73 @@ export default NuxtAuthHandler({
                 const isMatched = await bcrypt.compare(password, dataUser.password)
 
                 if(!isMatched) {
-                    console.log('error')
-                    throw new Error('Invalid credentials')
+                  throw new Error('User not found')
                 }        
             
                 return dataUser
         
             } catch (error) {
                 if(error instanceof ZodError){
+                    throw new Error('Invalid input credentials')
                     return null
+                }else {
+                  throw error
+                  return null
+                }
+            }
+        },
+
+      }),
+
+      // @ts-ignore
+      Credentials.default({
+        id: 'whatsapp',
+        name: 'whatsapp',
+        credentials: {
+          phone: { label: "Phone" , type: 'text'},
+          otp: { label: "OTP", type: "text" },
+        },
+        async authorize(credentials: any) {
+            const data = {
+                phone: credentials.phone,
+                otp: credentials.otp
+            }
+
+            try {
+                const schema = z.object({
+                    phone: z.string().min(8),
+                    otp: z.string().min(5),
+                })
+                
+                const {phone, otp } = await schema.parseAsync(data)
+
+                const dataOtp = await findOtpUser(phone)
+        
+                if (dataOtp == null) {
+                    throw new Error('User not found')
+                }
+
+                if(moment().isAfter(moment(dataOtp.expiredAt))) {
+                  throw new Error('OTP code has been expired')
+                }
+
+                const isMatched = await bcrypt.compare(otp, dataOtp.otp)
+
+                if(!isMatched) {
+                  throw new Error('Invalid OTP')
+                }        
+            
+                return {
+                  ...dataOtp.user
+                }
+        
+            } catch (error) {
+                if(error instanceof ZodError){
+                    throw new Error('Invalid input credentials')
+                    return null
+                }else {
+                  throw error
+                  return null
                 }
             }
         },
@@ -56,11 +116,7 @@ export default NuxtAuthHandler({
 
   callbacks: {
     async signIn({user}) {
-        console.log('user')
-      if (!user) {
-        return '/login?error=invalid_credentials' // Redirect dengan query error
-      }
-      return true
+      return user ? true : false
     }
   },
 

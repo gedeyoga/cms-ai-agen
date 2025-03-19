@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
         const schema = z.object({
             name: z.string().min(2, 'Name minimum at leats 2 characters'),
-            phone: z.string().min(10, 'Phone minimum at least 10 characters'),
+            phone: z.string().min(10, 'Phone must contain at least 10 character(s)').max(16, 'Phone must contain at most 16 character(s)'),
             status: z.string().min(3, 'Status is required'),
             categoryId: z
                 .array(z.number())
