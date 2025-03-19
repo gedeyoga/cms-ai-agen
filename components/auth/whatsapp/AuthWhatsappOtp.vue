@@ -34,6 +34,8 @@ const formSchema = toTypedSchema(
 const { signIn } = useAuth()
 const { dataAuthWhatsapp } = authWhatsappState()
 const router = useRouter()
+const { closeDialog } = dialogState()
+let { resetState } = authWhatsappState()
 
 let { handleSubmit, setFieldValue, setErrors } = useForm({
     validationSchema: formSchema,
@@ -66,6 +68,8 @@ const onSubmit = handleSubmit(async ({ otp }) => {
             otp: result.error,
         })
     } else {
+        closeDialog()
+        resetState()
         router.push('/')
     }
 })

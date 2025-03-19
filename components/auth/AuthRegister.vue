@@ -3,11 +3,9 @@ import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { z } from 'zod'
 import { toTypedSchema } from '@vee-validate/zod'
-import { useAuth } from '#imports'
 const { formatZodErrors } = errorFormState()
 import { Card, CardContent } from '@/components/ui/card'
 import {
-    Form,
     FormControl,
     FormField,
     FormItem,
@@ -17,10 +15,12 @@ import {
 import { Icon } from '@iconify/vue/dist/iconify.js'
 import { useForm } from 'vee-validate'
 import PhoneNumber from '../global/PhoneNumber.vue'
+import { Loader2 } from 'lucide-vue-next'
 
 const router = useRouter()
 
 let error = ref<string | null>(null)
+let loading = ref<boolean>(false)
 
 const formSchema = toTypedSchema(
     z.object({
@@ -41,6 +41,7 @@ const { handleSubmit, setErrors } = useForm({
 })
 
 const onSubmit = handleSubmit(async (values: any) => {
+    loading.value = true
     try {
         const result = await $fetch('/api/auth/register', {
             method: 'post',
@@ -51,6 +52,8 @@ const onSubmit = handleSubmit(async (values: any) => {
             },
         })
 
+        loading.value = false
+
         if (result.statusCode == 200) {
             const message = encodeURIComponent(result.data.validationToken)
             navigateTo(
@@ -59,6 +62,8 @@ const onSubmit = handleSubmit(async (values: any) => {
             )
         }
     } catch (error: any) {
+        loading.value = false
+
         if (error.status == 422) {
             if (error.data?.message == 'Validation error') {
                 const errors = formatZodErrors(error.data.data)
@@ -143,9 +148,18 @@ const emit = defineEmits<{
                         </FormField>
 
                         <div class="mt-10">
-                            <Button type="submit" class="w-full mb-5"
-                                >Register</Button
+                            <Button
+                                :disabled="loading"
+                                type="submit"
+                                class="w-full mb-5"
                             >
+                                <Loader2
+                                    v-if="loading"
+                                    class="w-4 h-4 mr-2 animate-spin"
+                                />
+
+                                Register
+                            </Button>
                         </div>
                     </form>
 
@@ -153,8 +167,16 @@ const emit = defineEmits<{
                         <span class="font-light"
                             >Already have an account ?</span
                         >
-                        <Button @click="router.push('/login')" variant="link"
-                            >Sign In</Button
+                        <Button
+                            :disabled="loading"
+                            @click="router.push('/login')"
+                            variant="link"
+                        >
+                            <Loader2
+                                v-if="loading"
+                                class="w-4 h-4 mr-2 animate-spin"
+                            />
+                            Sign In</Button
                         >
                     </div>
                 </CardContent>

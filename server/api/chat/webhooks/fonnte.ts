@@ -131,7 +131,6 @@ const registrationUser = async (sender: string, message: string) => {
     const messageSplit = message.split(':')
 
     if (messageSplit.length != 2) {
-        console.log('sdfhnsdl3')
         await sendWhatsapp(sender, 'Registration token is not valid')
         return null
     }
@@ -142,13 +141,11 @@ const registrationUser = async (sender: string, message: string) => {
         await findValidationToken(validationToken)
 
     if (!userRegistration) {
-        console.log('sdfhnsdl')
         await sendWhatsapp(sender, 'Registration token is not valid')
         return null
     }
 
     if (sender != userRegistration.phone) {
-        console.log('phone')
         await sendWhatsapp(
             sender,
             'Send this code using whatsapp number : ' + userRegistration.phone

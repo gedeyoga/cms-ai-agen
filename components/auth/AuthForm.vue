@@ -17,6 +17,7 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 import { Icon } from '@iconify/vue/dist/iconify.js'
+import { Loader2 } from 'lucide-vue-next'
 
 const router = useRouter()
 
@@ -24,6 +25,8 @@ let formLogin = ref({
     email: '',
     password: '',
 })
+
+let loading = ref<boolean>(false)
 
 let error = ref<string | null>(null)
 
@@ -35,12 +38,14 @@ const formSchema = toTypedSchema(
 )
 
 const onSubmit = async (values: any) => {
+    loading.value = true
     const result = await signIn('credentials', {
         email: formLogin.value.email,
         password: formLogin.value.password,
         callbackUrl: '/',
         redirect: false,
     })
+    loading.value = false
 
     if (result?.error) {
         error.value = result.error + ''
@@ -121,11 +126,17 @@ const emit = defineEmits<{
 
                         <div class="space-y-3">
                             <Button
+                                :disabled="loading"
                                 type="submit"
                                 form="loginForm"
                                 class="w-full mb-5"
-                                >Login</Button
                             >
+                                <Loader2
+                                    v-if="loading"
+                                    class="w-4 h-4 mr-2 animate-spin"
+                                />
+                                Login
+                            </Button>
 
                             <div class="text-center">
                                 <span>Or sign in with</span>
@@ -133,6 +144,7 @@ const emit = defineEmits<{
 
                             <div class="">
                                 <Button
+                                    :disabled="loading"
                                     type="button"
                                     @click="
                                         emit('onLoginProviders', 'whatsapp')
@@ -141,9 +153,14 @@ const emit = defineEmits<{
                                     class="w-full"
                                 >
                                     <Icon
+                                        v-if="loading == false"
                                         icon="mdi:whatsapp"
                                         :ssr="true"
                                     ></Icon>
+                                    <Loader2
+                                        v-else="loading"
+                                        class="w-4 h-4 mr-2 animate-spin"
+                                    />
                                     Whatsapp
                                 </Button>
                             </div>
@@ -154,10 +171,17 @@ const emit = defineEmits<{
                                 >Don't have an account ?</span
                             >
                             <Button
+                                type="button"
+                                :disabled="loading"
                                 @click="router.push('/register')"
                                 variant="link"
-                                >Sign up</Button
                             >
+                                <Loader2
+                                    v-if="loading"
+                                    class="w-4 h-4 mr-2 animate-spin"
+                                />
+                                Sign Up
+                            </Button>
                         </div>
                     </Form>
                 </CardContent>

@@ -21,7 +21,6 @@ const formatIndonesianPhoneNumber = (value: string | number | undefined) => {
     }
 
     let phoneNumber = value.replace(/\D/g, '') // Hapus semua karakter non-digit
-    console.log('format', phoneNumber)
 
     if (phoneNumber.startsWith('0')) {
         phoneNumber = '62' + phoneNumber.slice(1)
