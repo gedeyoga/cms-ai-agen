@@ -31,14 +31,13 @@ export default defineEventHandler(async (event) => {
         }
     }
 
-    const { device, status, reason } =
+    const { device, status } =
         event.method == 'GET' ? getQuery(event) : await readBody(event)
 
     try {
         const data = {
             device,
             status,
-            reason,
         }
 
         console.log('data webhook', data)
@@ -46,7 +45,6 @@ export default defineEventHandler(async (event) => {
         const schema = z.object({
             device: z.string(),
             status: z.string(),
-            reason: z.string(),
         })
 
         schema.parse(data)
