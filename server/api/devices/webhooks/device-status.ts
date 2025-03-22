@@ -40,8 +40,6 @@ export default defineEventHandler(async (event) => {
             status,
         }
 
-        console.log('data webhook', data)
-
         const schema = z.object({
             device: z.string(),
             status: z.string(),
