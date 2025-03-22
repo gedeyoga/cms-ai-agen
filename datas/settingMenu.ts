@@ -7,4 +7,10 @@ export const menus = ref<MenuInterface[]>([
         link: '/settings',
         children: [],
     },
+    {
+        label: 'Devices',
+        icon: '',
+        link: '/settings/devices',
+        children: [],
+    },
 ])

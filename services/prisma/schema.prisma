@@ -94,11 +94,38 @@ model UserOtp {
 }
 
 model UserRegistration {
-  id String @id @default(uuid())
-  name String
-  email String
-  phone String 
-  validationToken String 
+  id              String @id @default(uuid())
+  name            String
+  email           String
+  phone           String
+  validationToken String
 
   @@map("user_registration")
+}
+
+model DeviceWhatsapp {
+  id              String    @id @default(uuid())
+  token           String
+  name            String
+  device          String
+  countryCode     String    @default("62")
+  autoread        Boolean   @default(false)
+  group           Boolean   @default(false)
+  personal        Boolean   @default(false)
+  status          Boolean   @default(false)
+  quick           Boolean   @default(false)
+  resend          Boolean   @default(false)
+  expired         DateTime?
+  package         String?
+  source          String?
+  quota           Int?
+  messages        Int?
+  webhook         String?
+  webhookConnect  String?
+  webhookStatus   String?
+  webhookChaining String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("device_whatsapp")
 }

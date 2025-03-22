@@ -18,6 +18,7 @@ export const buttonVariants = cva(
                 ghost: 'hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50',
                 link: 'text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50',
                 whatsapp: 'bg-emerald-600 text-white !hover:bg-emerald-800',
+                success: 'bg-emerald-800 text-white !hover:bg-emerald-800',
             },
             size: {
                 default: 'h-9 px-4 py-2',
