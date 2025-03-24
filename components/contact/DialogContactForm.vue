@@ -44,7 +44,9 @@ const formSchema = toTypedSchema(
             .min(10, 'Phone must contain at least 10 character(s)')
             .max(16, 'Phone must contain at most 16 character(s)'),
         status: z.string().min(3),
-        categoryId: z.array(z.string().min(1)),
+        categoryId: z
+            .array(z.string().min(1))
+            .length(1, 'Category is required'),
     })
 )
 

@@ -7,22 +7,19 @@ import {
 import { UserInterface } from '~/types/UserInterface'
 
 //@ts-ignore
-import bcrypt from 'bcrypt'
-import moment from 'moment'
-import { sendWhatsapp } from '~/services/gemini-ai/services/fonnteClient'
 import { generateBase64Token } from '~/shared/codeCreation'
-import { UserRegistrationInterface } from '~/types/UserRegistrationInterface'
 import { UserRegistrationCreateInterface } from '~/types/UserRegistrationCreateInterface'
 import { createUserRegistration } from '~/repository/userRegistrationRepository'
 
 export default defineEventHandler(async (event) => {
-    const { name, email, phone } = await readBody(event)
+    const { name, email, phone, companyName } = await readBody(event)
 
     try {
         const data = {
             phone: phone,
             name: name,
             email: email,
+            companyName: companyName,
         }
 
         const schema = z.object({
@@ -32,6 +29,7 @@ export default defineEventHandler(async (event) => {
                 .max(16, 'Phone must contain at most 16 character(s)'),
             name: z.string().min(2, 'Name is required'),
             email: z.string().min(2, 'Email is required').email(),
+            companyName: z.string().min(2, 'Company name is required'),
         })
         schema.parse(data)
     } catch (error: any) {
@@ -78,6 +76,7 @@ export default defineEventHandler(async (event) => {
         name: name,
         email: email,
         phone: phone,
+        companyName: companyName,
         validationToken: generateBase64Token(41),
     }
 

@@ -1,11 +1,7 @@
 import { NuxtAuthHandler } from '#auth'
 import Credentials from 'next-auth/providers/credentials'
 import { z, ZodError } from 'zod'
-import {
-    findOtpUser,
-    findUniqueEmail,
-    findUniquePhoneUser,
-} from '~/repository/userRepository'
+import { findOtpUser, findUniqueEmail } from '~/repository/userRepository'
 // @ts-ignore
 import bcrypt from 'bcrypt'
 import moment from 'moment'
@@ -35,7 +31,7 @@ export default NuxtAuthHandler({
 
                     const { email, password } = await schema.parseAsync(data)
 
-                    const dataUser = await findUniqueEmail(email)
+                    const dataUser = await findUniqueEmail(email, null, true)
 
                     if (dataUser == null) {
                         throw new Error('User not found')
@@ -49,6 +45,8 @@ export default NuxtAuthHandler({
                     if (!isMatched) {
                         throw new Error('User not found')
                     }
+
+                    dataUser.password = ''
 
                     return dataUser
                 } catch (error) {
@@ -120,6 +118,25 @@ export default NuxtAuthHandler({
     callbacks: {
         async signIn({ user }) {
             return user ? true : false
+        },
+
+        async session({ session, token }) {
+            if (session.user) {
+                let user = await findUniqueEmail(session.user.email + '')
+                if (user) {
+                    return {
+                        ...session,
+                        user: {
+                            name: user.name,
+                            email: user.email,
+                            image: undefined,
+                            companyId: user.companyId,
+                            companyName: user.company?.name,
+                        },
+                    }
+                }
+            }
+            return session
         },
     },
 

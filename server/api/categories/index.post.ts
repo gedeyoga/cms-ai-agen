@@ -1,10 +1,19 @@
+import { getServerSession } from '#auth'
 import { defineEventHandler, getQuery } from 'h3'
 import { createCategory, list } from '~/repository/categoryRepository'
 
 export default defineEventHandler(async (event) => {
-    const body = await readBody(event)
+    const { name } = await readBody(event)
+    const session = await getServerSession(event)
 
-    const response = await createCategory(body)
+    const response = await createCategory({
+        name,
+        company: {
+            connect: {
+                id: session?.user?.companyId,
+            },
+        },
+    })
 
     return {
         status: 200,

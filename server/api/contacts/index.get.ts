@@ -1,4 +1,5 @@
 import { defineEventHandler, getQuery } from 'h3'
+import { getServerSession } from '#auth'
 import { getContactsWithPagination, list } from '~/repository/contactRepository'
 import { ContactInterface } from '~/types/ContactInterface'
 import { MetaInterface, PaginationInterface } from '~/types/PaginationInterface'
@@ -6,6 +7,8 @@ import { ParameterContactlist } from '~/types/ParameterContactListInterface'
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
+    const session = await getServerSession(event)
+
     let contacts: ContactInterface[] = []
     let meta: MetaInterface = {
         currentPage: 1,
@@ -38,6 +41,7 @@ export default defineEventHandler(async (event) => {
             categoryIds: categoryIds,
             status: status,
             search: typeof query.search === 'string' ? query.search : undefined,
+            companyId: session?.user?.companyId,
         }
 
         const response = await getContactsWithPagination(

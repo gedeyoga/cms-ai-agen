@@ -13,13 +13,23 @@ export const findDevice = async (id: string) => {
     })
 }
 
+interface PaginationParamsinterface {
+    companyId: string | null | undefined
+}
+
 export async function getDevicesWithPagination(
     page: number,
     pageSize: number,
-    search?: string
+    search?: string,
+    params?: PaginationParamsinterface
 ) {
-    // Hitung offset
+    //Check Params
+    let where: any = {}
+    if (params?.companyId) {
+        where['companyId'] = params.companyId
+    }
 
+    // Hitung offset
     const skip = (page - 1) * pageSize
 
     // Ambil data kategori dengan pagination
@@ -30,6 +40,7 @@ export async function getDevicesWithPagination(
             name: {
                 contains: search,
             },
+            ...where,
         },
         orderBy: { id: 'desc' }, // Urutkan berdasarkan tanggal terbaru (opsional)
     })

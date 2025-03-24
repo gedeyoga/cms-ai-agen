@@ -5,9 +5,11 @@ import {
 } from '~/repository/categoryRepository'
 import { MetaInterface, PaginationInterface } from '~/types/PaginationInterface'
 import { CategoryInterface } from '~/types/CategoryInterface'
+import { getServerSession } from '#auth'
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
+    const session = await getServerSession(event)
     let categories: CategoryInterface[] = []
     let meta: MetaInterface = {
         currentPage: 1,
@@ -15,18 +17,24 @@ export default defineEventHandler(async (event) => {
         total: 0,
         totalPages: 0,
     }
+    const params = {
+        companyId: session?.user?.companyId,
+    }
 
     if (query.per_page && query.page) {
-        const params = {
+        const pagination = {
             page: parseInt(query.page as string, 10) || 1,
             per_page: parseInt(query.per_page as string, 10) || 10,
             search: query.search + '',
         }
+
         const response = await getCategoriesWithPagination(
-            params.page,
-            params.per_page,
-            params.search
+            pagination.page,
+            pagination.per_page,
+            pagination.search,
+            params
         )
+
         categories = response.data
         meta = response.meta
 
@@ -39,6 +47,7 @@ export default defineEventHandler(async (event) => {
         const params = {
             orderBy: query.orderBy ? query.orderBy + '' : 'asc',
             search: query.search ? query.search + '' : '',
+            companyId: session?.user?.companyId,
         }
         const response = await list(params)
         return {

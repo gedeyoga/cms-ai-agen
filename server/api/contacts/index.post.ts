@@ -1,9 +1,12 @@
+import { getServerSession } from '#auth'
 import { defineEventHandler, getQuery } from 'h3'
 import { z } from 'zod'
 import { createContact, findUniquePhone } from '~/repository/contactRepository'
 
 export default defineEventHandler(async (event) => {
     const { name, phone, categoryId, status } = await readBody(event)
+    const session = await getServerSession(event)
+
     try {
         const data = {
             name,
@@ -41,7 +44,19 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    const response = await createContact({ name, phone, status }, categoryId)
+    const response = await createContact(
+        {
+            name,
+            phone,
+            status,
+            company: {
+                connect: {
+                    id: session?.user.companyId,
+                },
+            },
+        },
+        categoryId
+    )
 
     return {
         status: 200,

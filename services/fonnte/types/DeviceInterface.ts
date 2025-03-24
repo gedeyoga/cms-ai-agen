@@ -25,6 +25,7 @@ export interface UpdateDeviceInterface {
 
 export interface DeviceInterface {
     id: string
+    companyId: string
     token: string
     name: string
     device: string

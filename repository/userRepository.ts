@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import prisma from '~/services/prisma/client'
 import type { MetaInterface } from '~/types/PaginationInterface'
 
@@ -9,12 +10,21 @@ export const find = async (id: string) => {
     })
 }
 
+interface PaginationParamsinterface {
+    companyId: string | null | undefined
+}
+
 export async function getUsersWithPagination(
     page: number,
     pageSize: number,
-    search?: string
+    search?: string,
+    params?: PaginationParamsinterface
 ) {
     // Hitung offset
+    let where: any = {}
+    if (params?.companyId) {
+        where['companyId'] = params.companyId
+    }
 
     const skip = (page - 1) * pageSize
 
@@ -34,6 +44,7 @@ export async function getUsersWithPagination(
             name: {
                 contains: search,
             },
+            ...where,
         },
         orderBy: { id: 'desc' }, // Urutkan berdasarkan tanggal terbaru (opsional)
     })
@@ -77,28 +88,15 @@ export async function list(params: ListParams) {
     return categories
 }
 
-export async function createUser(data: any) {
+export async function createUser(data: Prisma.UserCreateInput) {
     const user = await prisma.user.create({
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            createdAt: true,
-            updatedAt: true,
-        },
-        data: {
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            phone: data.phone,
-        },
+        data: data,
     })
 
     return user
 }
 
-export async function updateUser(id: string, data: any) {
+export async function updateUser(id: string, data: Prisma.UserUpdateInput) {
     let dataForm: any = {
         name: data.name,
         email: data.email,
@@ -114,14 +112,6 @@ export async function updateUser(id: string, data: any) {
             id: id,
         },
         data: dataForm,
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            createdAt: true,
-            updatedAt: true,
-        },
     })
 
     return user
@@ -139,19 +129,15 @@ export async function destroyUser(id: string) {
 
 export async function findUniqueEmail(
     email: string,
-    userId: string | null = null
+    userId: string | null = null,
+    creadentials: boolean = false
 ) {
     let user = null
 
     if (userId != null) {
         user = await prisma.user.findFirst({
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                createdAt: true,
-                updatedAt: true,
+            omit: {
+                password: !creadentials,
             },
             where: {
                 phone: email,
@@ -160,13 +146,11 @@ export async function findUniqueEmail(
         })
     } else {
         user = await prisma.user.findUnique({
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                createdAt: true,
-                updatedAt: true,
+            include: {
+                company: true,
+            },
+            omit: {
+                password: !creadentials,
             },
             where: {
                 email: email,

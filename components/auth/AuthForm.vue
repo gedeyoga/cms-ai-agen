@@ -87,7 +87,7 @@ const emit = defineEmits<{
                                 name="email"
                                 v-model="formLogin.email"
                             >
-                                <FormItem class="mb-5">
+                                <FormItem class="mb-3">
                                     <FormLabel class="text-white"
                                         >Email</FormLabel
                                     >

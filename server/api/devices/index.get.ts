@@ -1,10 +1,11 @@
+import { getServerSession } from '#auth'
 import { defineEventHandler, getQuery } from 'h3'
 import { getDevicesWithPagination, list } from '~/repository/deviceRepository'
-import { DeviceInterface } from '~/services/fonnte/types/DeviceInterface'
-import { MetaInterface, PaginationInterface } from '~/types/PaginationInterface'
+import { MetaInterface } from '~/types/PaginationInterface'
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
+    const session = await getServerSession(event)
     let devices = []
     let meta: MetaInterface = {
         currentPage: 1,
@@ -14,15 +15,20 @@ export default defineEventHandler(async (event) => {
     }
 
     if (query.per_page && query.page) {
-        const params = {
+        const pagination = {
             page: parseInt(query.page as string, 10) || 1,
             per_page: parseInt(query.per_page as string, 10) || 10,
             search: query.search + '',
         }
+        const params = {
+            companyId: session?.user?.companyId,
+        }
+
         const response = await getDevicesWithPagination(
-            params.page,
-            params.per_page,
-            params.search
+            pagination.page,
+            pagination.per_page,
+            pagination.search,
+            params
         )
         devices = response.data
         meta = response.meta

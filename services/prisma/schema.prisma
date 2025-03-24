@@ -9,6 +9,7 @@ generator client {
 
 model Contact {
   id        Int      @id @default(autoincrement())
+  companyId String?
   phone     String   @unique
   name      String?
   status    Status   @default(NEW)
@@ -17,17 +18,20 @@ model Contact {
 
   categories    ContactCategory[]
   chatHistories ChatHistory[]
+  company       Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("contact")
 }
 
 model Category {
   id        Int      @id @default(autoincrement())
+  companyId String?
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   contacts ContactCategory[]
+  company  Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("category")
 }
@@ -70,6 +74,7 @@ model ChatHistory {
 
 model User {
   id        String   @id @default(uuid()) // Gunakan UUID sebagai primary key
+  companyId String?
   name      String
   email     String   @unique
   phone     String   @unique
@@ -78,6 +83,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   userOtps UserOtp[]
+  company  Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model UserOtp {
@@ -94,17 +100,20 @@ model UserOtp {
 }
 
 model UserRegistration {
-  id              String @id @default(uuid())
+  id              String   @id @default(uuid())
   name            String
   email           String
   phone           String
+  companyName     String   @default("")
   validationToken String
+  createdAt       DateTime @default(now())
 
   @@map("user_registration")
 }
 
 model DeviceWhatsapp {
   id              String    @id @default(uuid())
+  companyId       String?
   token           String
   name            String
   device          String
@@ -127,5 +136,22 @@ model DeviceWhatsapp {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@map("device_whatsapp")
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      User[]
+  contacts   Contact[]
+  categories Category[]
+  devices    DeviceWhatsapp[]
 }

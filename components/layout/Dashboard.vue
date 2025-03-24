@@ -31,7 +31,12 @@ const logOut = () => {
         <Popover>
             <PopoverTrigger>
                 <div class="flex items-center space-x-3 cursor-pointer">
-                    <span>{{ data?.user?.name }}</span>
+                    <div class="flex flex-col items-end">
+                        <span class="text-lg">{{ data?.user?.name }}</span>
+                        <span class="text-sm">{{
+                            data?.user?.companyName
+                        }}</span>
+                    </div>
                     <img
                         class="w-10 h-10 rounded-full object-center"
                         src="/images/default-user.png"

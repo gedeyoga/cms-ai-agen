@@ -29,6 +29,7 @@ const formSchema = toTypedSchema(
             .string()
             .min(10, 'Phone must contain at least 10 character(s)'),
         email: z.string().min(2, 'Email is requried').email(),
+        companyName: z.string().min(2, 'Company name is required'),
     })
 )
 
@@ -37,6 +38,8 @@ const { handleSubmit, setErrors } = useForm({
     initialValues: {
         name: '',
         phone: '',
+        email: '',
+        companyName: '',
     },
 })
 
@@ -49,6 +52,7 @@ const onSubmit = handleSubmit(async (values: any) => {
                 name: values.name,
                 email: values.email,
                 phone: values.phone,
+                companyName: values.companyName,
             },
         })
 
@@ -81,10 +85,10 @@ const emit = defineEmits<{
     <div class="flex items-center h-screen">
         <div class="container flex justify-center">
             <Card class="w-full ease-in-out duration-300 max-w-[400px]">
-                <CardContent class="p-10">
+                <CardContent class="px-10 py-5">
                     <h2 class="text-3xl text-center mb-6">Sign Up</h2>
 
-                    <form class="my-10" @submit="onSubmit">
+                    <form class="" @submit="onSubmit">
                         <div
                             v-if="error"
                             class="bg-red-900/90 w-full rounded p-3 mb-5 text-xs"
@@ -92,8 +96,28 @@ const emit = defineEmits<{
                             {{ error }}
                         </div>
 
+                        <FormField
+                            v-slot="{ componentField }"
+                            name="companyName"
+                        >
+                            <FormItem class="mb-2">
+                                <FormLabel class="text-white"
+                                    >Company</FormLabel
+                                >
+                                <FormControl>
+                                    <Input
+                                        class="text-white"
+                                        type="text"
+                                        placeholder="Ex: PT Mari Buka Akses"
+                                        v-bind="componentField"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        </FormField>
+
                         <FormField v-slot="{ componentField }" name="name">
-                            <FormItem class="mb-5">
+                            <FormItem class="mb-2">
                                 <FormLabel class="text-white">Name</FormLabel>
                                 <FormControl>
                                     <Input
@@ -107,7 +131,7 @@ const emit = defineEmits<{
                             </FormItem>
                         </FormField>
                         <FormField v-slot="{ componentField }" name="email">
-                            <FormItem class="mb-5">
+                            <FormItem class="mb-2">
                                 <FormLabel class="text-white">Email</FormLabel>
                                 <FormControl>
                                     <Input

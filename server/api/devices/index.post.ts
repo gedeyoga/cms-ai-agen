@@ -47,20 +47,18 @@ export default defineEventHandler(async (event) => {
 
     const { token } = response
 
-
     try {
         const responseUpdate = await updateDevice(token, {
             name,
             device,
-            webhookconnect: process.env.BASE_URL + '/api/devices/webhooks/device-status',
+            webhookconnect:
+                process.env.BASE_URL + '/api/devices/webhooks/device-status',
             webhook: process.env.BASE_URL + '/api/chat/webhooks/fonnte',
         })
         console.log('response update webhook', responseUpdate)
-
     } catch (error) {
         console.log('error update webhook', error)
     }
-
 
     const deviceWhatsapp = await createDevice({
         name,
@@ -69,7 +67,8 @@ export default defineEventHandler(async (event) => {
         autoread,
         group,
         token,
-        webhookConnect: process.env.BASE_URL + '/api/devices/webhooks/device-status',
+        webhookConnect:
+            process.env.BASE_URL + '/api/devices/webhooks/device-status',
         webhook: process.env.BASE_URL + '/api/chat/webhooks/fonnte',
     })
 

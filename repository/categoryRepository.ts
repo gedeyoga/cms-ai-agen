@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import prisma from '~/services/prisma/client'
 import type { MetaInterface } from '~/types/PaginationInterface'
 
@@ -9,13 +10,23 @@ export const find = async (id: number) => {
     })
 }
 
+interface PaginationParamsinterface {
+    companyId: string | null | undefined
+}
+
 export async function getCategoriesWithPagination(
     page: number,
     pageSize: number,
-    search?: string
+    search?: string,
+    params?: PaginationParamsinterface
 ) {
-    // Hitung offset
+    //Check Params
+    let where: any = {}
+    if (params?.companyId) {
+        where['companyId'] = params.companyId
+    }
 
+    // Hitung offset
     const skip = (page - 1) * pageSize
 
     // Ambil data kategori dengan pagination
@@ -26,6 +37,7 @@ export async function getCategoriesWithPagination(
             name: {
                 contains: search,
             },
+            ...where,
         },
         orderBy: { id: 'desc' }, // Urutkan berdasarkan tanggal terbaru (opsional)
     })
@@ -52,6 +64,7 @@ export async function getCategoriesWithPagination(
 interface ListParams {
     search?: string
     orderBy?: string
+    companyId?: string
 }
 
 export async function list(params: ListParams) {
@@ -60,6 +73,7 @@ export async function list(params: ListParams) {
             name: {
                 contains: params.search,
             },
+            companyId: params.companyId,
         },
         orderBy: {
             id: params.orderBy ? 'asc' : 'desc',
@@ -69,24 +83,23 @@ export async function list(params: ListParams) {
     return categories
 }
 
-export async function createCategory(data: any) {
+export async function createCategory(data: Prisma.CategoryCreateInput) {
     const category = await prisma.category.create({
-        data: {
-            name: data.name,
-        },
+        data: data,
     })
 
     return category
 }
 
-export async function updateCategory(id: number, data: any) {
+export async function updateCategory(
+    id: number,
+    data: Prisma.CategoryUpdateInput
+) {
     const category = await prisma.category.update({
         where: {
             id: id,
         },
-        data: {
-            name: data.name,
-        },
+        data: data,
     })
 
     return category

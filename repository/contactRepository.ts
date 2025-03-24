@@ -1,4 +1,4 @@
-import type { Status } from '@prisma/client'
+import type { Prisma, Status } from '@prisma/client'
 import prisma from '~/services/prisma/client'
 import type { MetaInterface } from '~/types/PaginationInterface'
 import type { ParameterContactlist } from '~/types/ParameterContactListInterface'
@@ -16,8 +16,15 @@ export async function getContactsWithPagination(
     pageSize: number,
     parameters?: ParameterContactlist
 ) {
-    // Hitung offset
+    // Kondisi Params
+    let where = {}
+    if (parameters?.companyId) {
+        where = {
+            companyId: parameters?.companyId,
+        }
+    }
 
+    // Hitung offset
     const skip = (page - 1) * pageSize
 
     const status = parameters?.status?.map((item) => item as Status) ?? []
@@ -66,6 +73,7 @@ export async function getContactsWithPagination(
                           },
                       }
                     : {},
+            ...where,
         },
         orderBy: { id: 'desc' }, // Urutkan berdasarkan tanggal terbaru (opsional)
     })
@@ -141,6 +149,7 @@ export async function createContact(data: any, categoryId = []) {
                     }
                 }),
             },
+            company: data.company ?? {},
         },
     })
 

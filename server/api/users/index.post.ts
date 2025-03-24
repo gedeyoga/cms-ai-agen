@@ -4,9 +4,11 @@ import { z } from 'zod'
 
 //@ts-ignore
 import bcrypt from 'bcrypt'
+import { getServerSession } from '#auth'
 
 export default defineEventHandler(async (event) => {
     const { name, email, password, phone } = await readBody(event)
+    const session = await getServerSession(event)
 
     try {
         const data = {
@@ -50,6 +52,11 @@ export default defineEventHandler(async (event) => {
         name,
         email,
         phone,
+        company: {
+            connect: {
+                id: session?.user?.companyId,
+            },
+        },
         password: hashPassword,
     })
 

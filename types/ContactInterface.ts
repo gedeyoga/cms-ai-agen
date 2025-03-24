@@ -3,6 +3,7 @@ import type { ChatHistoryInterface } from './ChatHistoryInterface'
 
 export interface ContactInterface {
     id?: number | null
+    companyId?: string | null | undefined
     phone: string
     name: string
     status: string
