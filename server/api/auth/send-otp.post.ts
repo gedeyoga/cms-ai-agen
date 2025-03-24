@@ -9,8 +9,8 @@ import { UserInterface } from '~/types/UserInterface'
 //@ts-ignore
 import bcrypt from 'bcrypt'
 import moment from 'moment'
-import { sendWhatsapp } from '~/services/gemini-ai/services/fonnteClient'
 import { generateOTP } from '~/shared/codeCreation'
+import { fonnteToken , sendWhatsapp } from '~/services/fonnte/whatsapp'
 
 export default defineEventHandler(async (event) => {
     const { phone } = await readBody(event)
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
 
     const userOtp = await createOtpUser(user.id, hashedOtp, expiredAt)
 
-    await sendWhatsapp(user.phone, 'Your OTP code is ' + otp + '')
+    await sendWhatsapp(user.phone, 'Your OTP code is ' + otp + '' , fonnteToken ?? '')
 
     return {
         statusCode: 200,

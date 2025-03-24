@@ -1,3 +1,5 @@
+import axios from 'axios'
+import FormData from 'form-data'
 interface FonnteInterface {
     target: string
     url: string
@@ -8,7 +10,8 @@ interface FonnteInterface {
     countryCode: string
 }
 
-const fonnteAPi = process.env.FONNTE_API
+export const fonnteAPi = process.env.FONNTE_API
+export const fonnteToken = process.env.FONNTE_TOKEN
 
 export const sendWhatsapp = async (
     target: string,
@@ -26,16 +29,18 @@ export const sendWhatsapp = async (
             countryCode: '62',
         }
 
-        const response = await fetch(`${fonnteAPi}send`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `${deviceToken}`,
-            },
-            body: JSON.stringify(data),
-        })
+        const formData = new FormData()
+        for (const key in data) {
+            formData.append(key, data[key as keyof FonnteInterface])
+        }
 
-        return await response.json()
+        const response = await axios.post(`${fonnteAPi}send`, formData, {
+            headers: {
+                Authorization: deviceToken,
+                ...formData.getHeaders()
+            }
+        })        
+        return response
     } catch (error) {
         return error
     }
