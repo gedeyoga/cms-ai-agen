@@ -84,6 +84,7 @@ model User {
 
   userOtps UserOtp[]
   company  Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  @@map("user")
 }
 
 model UserOtp {
@@ -154,4 +155,6 @@ model Company {
   contacts   Contact[]
   categories Category[]
   devices    DeviceWhatsapp[]
+
+  @@map("company")
 }
