@@ -43,9 +43,10 @@ export async function getContactsWithPagination(
             },
             chatHistories: {
                 take: 1, // Ambil hanya satu pesan terbaru
-                orderBy: {
-                    createdAt: 'desc', // Urutkan dari yang terbaru
-                },
+                orderBy: [
+                    { readedAt: 'asc' }, // Prioritaskan chat yang belum dibaca
+                    { updatedAt: 'desc' }, // Urutkan berdasarkan waktu terbaru
+                ],
             },
             _count: {
                 select: {
@@ -75,7 +76,12 @@ export async function getContactsWithPagination(
                     : {},
             ...where,
         },
-        orderBy: { id: 'desc' }, // Urutkan berdasarkan tanggal terbaru (opsional)
+        orderBy: {
+            chatHistories: {
+                _count: 'desc', // Prioritaskan kontak yang memiliki chat yang belum dibaca
+            },
+        },
+        // orderBy: { id: 'desc' }, // Urutkan berdasarkan tanggal terbaru (opsional)
     })
 
     // Hitung total kategori

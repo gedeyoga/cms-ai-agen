@@ -22,44 +22,93 @@ const {
     markChatRead,
 } = useChatState()
 let loading = ref<boolean>(false)
+let hasMoreData = ref(true)
+let currentPage = ref(1)
+let containerRef = ref<HTMLElement | null>(null)
 
 const setLoading = (val: boolean) => {
     loading.value = val
 }
 
-const fetchData = async () => {
+const fetchData = async (page = 1, append = false) => {
+    if (!hasMoreData.value) return
     setLoading(true)
     const response: any = await $fetch('/api/contacts', {
         query: {
             search: search.value,
             per_page: 10,
-            page: 1,
+            page: page,
         },
     })
 
     setLoading(false)
 
-    if (response.status == 200) {
-        setMessages(
-            response.data.map((item: ContactInterface) => {
-                const chatHistory = item.chatHistories
-                    ? item.chatHistories.length > 0
-                        ? item.chatHistories[0]
-                        : null
-                    : null
+    // if (response.status == 200) {
+    //     setMessages(
+    //         response.data.map((item: ContactInterface) => {
+    //             const chatHistory = item.chatHistories
+    //                 ? item.chatHistories.length > 0
+    //                     ? item.chatHistories[0]
+    //                     : null
+    //                 : null
 
-                return {
-                    contactId: item.id,
-                    name: item.name,
-                    image: '/images/default-user.png',
-                    message: chatHistory ? chatHistory.content : '-',
-                    createdAt: chatHistory ? chatHistory.createdAt : '-',
-                    unreadCount: item.unreadCount,
-                    role: chatHistory ? chatHistory.role : '-',
-                }
-            })
-        )
-        contacts.value = response.data
+    //             return {
+    //                 contactId: item.id,
+    //                 name: item.name,
+    //                 image: '/images/default-user.png',
+    //                 message: chatHistory ? chatHistory.content : '-',
+    //                 createdAt: chatHistory ? chatHistory.createdAt : '-',
+    //                 unreadCount: item.unreadCount,
+    //                 role: chatHistory ? chatHistory.role : '-',
+    //             }
+    //         })
+    //     )
+    //     contacts.value = response.data
+    // }
+    if (response.status === 200) {
+        const newContacts = response.data
+        if (newContacts.length < 10) {
+            hasMoreData.value = false // Tidak ada lagi halaman berikutnya
+        }
+
+        if (append) {
+            contacts.value = [...contacts.value, ...newContacts]
+            messages.value = [...messages.value, ...newContacts.map((item: ContactInterface) => ({
+                contactId: item.id,
+                name: item.name,
+                image: '/images/default-user.png',
+                message: item.chatHistories?.[0]?.content || '-',
+                createdAt: item.chatHistories?.[0]?.createdAt || '-',
+                unreadCount: item.unreadCount,
+                role: item.chatHistories?.[0]?.role || '-',
+            }))]
+        } else {
+            contacts.value = newContacts
+            messages.value = newContacts.map((item: ContactInterface) => ({
+                contactId: item.id,
+                name: item.name,
+                image: '/images/default-user.png',
+                message: item.chatHistories?.[0]?.content || '-',
+                createdAt: item.chatHistories?.[0]?.createdAt || '-',
+                unreadCount: item.unreadCount,
+                role: item.chatHistories?.[0]?.role || '-',
+            }))
+        }
+    }
+}
+
+const loadMoreData = async () => {
+    if (!hasMoreData.value || loading.value) return
+    currentPage.value++
+    await fetchData(currentPage.value, true)
+}
+
+const onScroll = () => {
+    if (!containerRef.value) return
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.value
+
+    if (scrollTop + clientHeight >= scrollHeight - 50) {
+        loadMoreData()
     }
 }
 
@@ -106,6 +155,8 @@ const listMessageClicked = async (message: MessageInterface, index: number) => {
 }
 
 const searchData = () => {
+    currentPage.value = 1
+    hasMoreData.value = true
     fetchData()
 }
 
@@ -114,14 +165,25 @@ const clearSearch = () => {
     fetchData()
 }
 
-onMounted(() => {
+onMounted(async () => {
     const channel = $pusher.subscribe('chat-channel')
     channel.bind('new-message', (data: ChatHistoryInterface) => {
         setIncomingChat(data)
     })
+
+    await fetchData()
+
+    if (containerRef.value) {
+        containerRef.value.addEventListener('scroll', onScroll)
+    }
 })
 
-await fetchData()
+onUnmounted(() => {
+    if (containerRef.value) {
+        containerRef.value.removeEventListener('scroll', onScroll)
+    }
+})
+
 </script>
 
 <template>
@@ -160,17 +222,8 @@ await fetchData()
             </div>
         </div>
 
-        <div
-            v-if="loading"
-            class="space-y-4 overflow-y-auto scroll-smooth h-full overflow-hidden px-3"
-        >
-            <SidebarChatSkeleton></SidebarChatSkeleton>
-        </div>
-
-        <div
-            v-else
-            class="space-y-1 overflow-y-auto scroll-smooth h-full overflow-hidden px-3"
-        >
+        <div ref="containerRef" class="space-y-1 overflow-y-auto scroll-smooth h-full overflow-hidden px-3">
+            <SidebarChatSkeleton v-if="loading"></SidebarChatSkeleton>
             <ListMessage
                 v-for="(message, key) in messages"
                 :key="key"
