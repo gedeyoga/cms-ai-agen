@@ -25,6 +25,11 @@ const { $pusher } = useNuxtApp()
 let message = ref<string>('')
 let loading = ref<boolean>(false)
 let loadingSendMessage = ref<boolean>(false)
+let loadingMore = ref<boolean>(false)
+let currentPage = ref(1)
+let hasMoreMessages = ref(true)
+const perPage = 10
+const messagesContainer = ref<HTMLElement | null>(null)
 
 const setLoading = (val: boolean) => {
     loading.value = val
@@ -34,15 +39,48 @@ const setLoadingSendMessage = (val: boolean) => {
     loadingSendMessage.value = val
 }
 
-const fetchMessages = async (contactId: number) => {
-    setLoading(true)
-    const response: any = await $fetch('/api/chat/' + contactId + '/messages', {
-        method: 'GET',
-    })
-    setLoading(false)
+// const fetchMessages = async (contactId: number) => {
+//     setLoading(true)
+//     const response: any = await $fetch('/api/chat/' + contactId + '/messages', {
+//         method: 'GET',
+//     })
+//     setLoading(false)
 
-    if (response.status == 200) {
-        setChatHistories(response.data)
+//     if (response.status == 200) {
+//         setChatHistories(response.data)
+//     }
+// }
+
+const fetchMessages = async (contactId: number, page = 1, append = false) => {
+    if (page === 1) {
+        setLoading(true)
+    } else {
+        loadingMore.value = true
+    }
+    
+    const response: any = await $fetch(`/api/chat/${contactId}/messages`, {
+        query: {
+            page,
+            per_page: perPage
+        }
+    })
+    
+    if (page === 1) {
+        setLoading(false)
+    } else {
+        loadingMore.value = false
+    }
+
+    if (response.status === 200) {
+        hasMoreMessages.value = response.data.hasMore
+        
+        if (append) {
+            // For older messages, add to the end (since we're scrolling up)
+            setChatHistories([...chatHistories.value, ...response.data.data])
+        } else {
+            // For initial load or refresh
+            setChatHistories(response.data.data)
+        }
     }
 }
 
@@ -66,6 +104,36 @@ const sendMessage = async () => {
     message.value = ''
 }
 
+const handleScroll = () => {
+    if (!messagesContainer.value || loadingMore.value || !hasMoreMessages.value) return
+    
+    const container = messagesContainer.value
+    const scrollPosition = container.scrollHeight - container.scrollTop - container.clientHeight
+    
+    // Load more when scrolled near the top
+    if (scrollPosition > container.scrollHeight - 50) {
+        loadMoreMessages()
+    }
+}
+
+const loadMoreMessages = async () => {
+    if (!hasMoreMessages.value || loadingMore.value) return;
+
+    const container = messagesContainer.value;
+    if (!container) return;
+
+    // Simpan posisi scroll sebelum menambahkan pesan baru
+    const previousScrollHeight = container.scrollHeight;
+
+    currentPage.value++;
+    await fetchMessages(contact.value?.id || 0, currentPage.value, true);
+
+    await nextTick(); // Tunggu Vue merender data baru
+
+    // Setel kembali posisi scroll setelah pesan baru dimuat
+    container.scrollTop += container.scrollHeight - previousScrollHeight;
+};
+
 const showDetailContact = () => {
     if (contactActive.value) {
         setContact(contactActive.value)
@@ -78,6 +146,7 @@ watch(
     (newVal) => {
         if (newVal) {
             setContact(newVal)
+            currentPage = ref(1)
             fetchMessages(newVal.id ? newVal.id : 0)
         }
     }
@@ -93,6 +162,16 @@ onMounted(() => {
             }
         }
     })
+     // Add scroll listener
+    if (messagesContainer.value) {
+        messagesContainer.value.addEventListener('scroll', handleScroll)
+    }
+})
+
+onUnmounted(() => {
+    if (messagesContainer.value) {
+        messagesContainer.value.removeEventListener('scroll', handleScroll)
+    }
 })
 </script>
 
@@ -127,6 +206,10 @@ onMounted(() => {
                     </Button>
                 </div>
             </div>
+            <!-- Loading indicator for older messages -->
+            <div v-if="loadingMore" class="w-full text-center py-2">
+                <Loader2 class="w-4 h-4 mx-auto animate-spin" />
+            </div>
             <div
                 v-if="loading"
                 class="grow-1 h-full p-4 overflow-y-auto overflow-hidden flex flex-col-reverse"
@@ -135,8 +218,10 @@ onMounted(() => {
             </div>
             <div
                 v-else
+                ref="messagesContainer"
                 class="grow-1 h-full p-4 overflow-y-auto overflow-hidden flex flex-col-reverse"
-            >
+                @scroll="handleScroll"
+            >   
                 <BoxMessage
                     v-for="chat in chatHistories"
                     :position="chat.role == 'user' ? 'left' : 'right'"

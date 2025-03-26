@@ -44,7 +44,7 @@ export async function getContactsWithPagination(
             chatHistories: {
                 take: 1, // Ambil hanya satu pesan terbaru
                 orderBy: [
-                    { readedAt: 'asc' }, // Prioritaskan chat yang belum dibaca
+                    // { readedAt: 'asc' }, // Prioritaskan chat yang belum dibaca
                     { updatedAt: 'desc' }, // Urutkan berdasarkan waktu terbaru
                 ],
             },
