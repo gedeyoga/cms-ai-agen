@@ -8,7 +8,7 @@ ALTER TABLE `contact` ADD COLUMN `companyId` VARCHAR(191) NULL;
 ALTER TABLE `device_whatsapp` ADD COLUMN `companyId` VARCHAR(191) NULL;
 
 -- AlterTable
-ALTER TABLE `user` ADD COLUMN `companyId` VARCHAR(191) NULL;
+ALTER TABLE `User` ADD COLUMN `companyId` VARCHAR(191) NULL;
 
 -- AlterTable
 ALTER TABLE `user_registration` ADD COLUMN `companyName` VARCHAR(191) NOT NULL DEFAULT '';
