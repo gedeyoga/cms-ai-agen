@@ -6,6 +6,7 @@ import type { MessageInterface } from '~/types/MessageInterface'
 import { Icon } from '@iconify/vue'
 import { useChatState } from '~/composables/chatState'
 import SidebarChatSkeleton from './SidebarChatSkeleton.vue'
+import { useVirtualList } from '@vueuse/core'
 const { $pusher } = useNuxtApp()
 
 let contacts = ref<ContactInterface[]>([])
@@ -26,6 +27,16 @@ let hasMoreData = ref(true)
 let currentPage = ref(1)
 let containerRef = ref<HTMLElement | null>(null)
 
+// Virtual list setup
+const itemHeight = 65 // Estimated height of each chat item in pixels
+const { list, containerProps, wrapperProps } = useVirtualList(
+  messages,
+  {
+    itemHeight,
+    overscan: 10, // Number of extra items to render above/below the visible area
+  }
+)
+
 const setLoading = (val: boolean) => {
     loading.value = val
 }
@@ -43,48 +54,29 @@ const fetchData = async (page = 1, append = false) => {
 
     setLoading(false)
 
-    // if (response.status == 200) {
-    //     setMessages(
-    //         response.data.map((item: ContactInterface) => {
-    //             const chatHistory = item.chatHistories
-    //                 ? item.chatHistories.length > 0
-    //                     ? item.chatHistories[0]
-    //                     : null
-    //                 : null
-
-    //             return {
-    //                 contactId: item.id,
-    //                 name: item.name,
-    //                 image: '/images/default-user.png',
-    //                 message: chatHistory ? chatHistory.content : '-',
-    //                 createdAt: chatHistory ? chatHistory.createdAt : '-',
-    //                 unreadCount: item.unreadCount,
-    //                 role: chatHistory ? chatHistory.role : '-',
-    //             }
-    //         })
-    //     )
-    //     contacts.value = response.data
-    // }
     if (response.status === 200) {
         const newContacts = response.data
         if (newContacts.length < 10) {
-            hasMoreData.value = false // Tidak ada lagi halaman berikutnya
+            hasMoreData.value = false
         }
 
         if (append) {
             contacts.value = [...contacts.value, ...newContacts]
-            messages.value = [...messages.value, ...newContacts.map((item: ContactInterface) => ({
-                contactId: item.id,
-                name: item.name,
-                image: '/images/default-user.png',
-                message: item.chatHistories?.[0]?.content || '-',
-                createdAt: item.chatHistories?.[0]?.createdAt || '-',
-                unreadCount: item.unreadCount,
-                role: item.chatHistories?.[0]?.role || '-',
-            }))]
+            setMessages([
+                ...messages.value,
+                ...newContacts.map((item: ContactInterface) => ({
+                    contactId: item.id,
+                    name: item.name,
+                    image: '/images/default-user.png',
+                    message: item.chatHistories?.[0]?.content || '-',
+                    createdAt: item.chatHistories?.[0]?.createdAt || '-',
+                    unreadCount: item.unreadCount,
+                    role: item.chatHistories?.[0]?.role || '-',
+                }))
+            ])
         } else {
             contacts.value = newContacts
-            messages.value = newContacts.map((item: ContactInterface) => ({
+            setMessages(newContacts.map((item: ContactInterface) => ({
                 contactId: item.id,
                 name: item.name,
                 image: '/images/default-user.png',
@@ -92,7 +84,7 @@ const fetchData = async (page = 1, append = false) => {
                 createdAt: item.chatHistories?.[0]?.createdAt || '-',
                 unreadCount: item.unreadCount,
                 role: item.chatHistories?.[0]?.role || '-',
-            }))
+            })))
         }
     }
 }
@@ -103,11 +95,12 @@ const loadMoreData = async () => {
     await fetchData(currentPage.value, true)
 }
 
-const onScroll = () => {
-    if (!containerRef.value) return
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.value
-
-    if (scrollTop + clientHeight >= scrollHeight - 50) {
+const onScroll = (e: Event) => {
+    const target = e.target as HTMLElement
+    const { scrollTop, scrollHeight, clientHeight } = target
+    
+    // Check if we've scrolled near the bottom
+    if (scrollHeight - (scrollTop + clientHeight) < 100) {
         loadMoreData()
     }
 }
@@ -128,7 +121,8 @@ watch(incomingChat, (val) => {
                 chatActive.value.contactId == val.contactId ? 0 : unreadCount
         }
 
-        messages.value.unshift({
+        // Add new message to the beginning of the list
+        const newMessage = {
             contactId: val.contactId,
             name: val.contact?.name ?? '',
             image: '/images/default-user.png',
@@ -136,7 +130,9 @@ watch(incomingChat, (val) => {
             createdAt: val.createdAt ?? '',
             unreadCount: unreadCount,
             role: val.role,
-        })
+        }
+        
+        setMessages([newMessage, ...messages.value])
     }
 })
 
@@ -172,22 +168,12 @@ onMounted(async () => {
     })
 
     await fetchData()
-
-    if (containerRef.value) {
-        containerRef.value.addEventListener('scroll', onScroll)
-    }
-})
-
-onUnmounted(() => {
-    if (containerRef.value) {
-        containerRef.value.removeEventListener('scroll', onScroll)
-    }
 })
 
 </script>
 
 <template>
-    <div class="flex flex-col max-w-[300px] w-full">
+    <div class="flex flex-col max-w-[300px] w-full h-full">
         <div class="px-5 py-7 w-full">
             <h2 class="text-xl mb-5">Chats</h2>
             <div class="relative w-full max-w-sm items-center">
@@ -222,20 +208,27 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <div ref="containerRef" class="space-y-1 overflow-y-auto scroll-smooth h-full overflow-hidden px-3">
-            <SidebarChatSkeleton v-if="loading"></SidebarChatSkeleton>
-            <ListMessage
-                v-for="(message, key) in messages"
-                :key="key"
-                :name="message.name"
-                :message="message.message"
-                :image="message.image"
-                :created-at="message.createdAt"
-                :unread-count="message.unreadCount"
-                :role="message.role"
-                :clicked="chatActive?.contactId === message.contactId"
-                @onClick="listMessageClicked(message, key)"
-            ></ListMessage>
+        <div 
+            v-bind="containerProps"
+            class="overflow-y-auto px-3"
+            @scroll="onScroll"
+        >
+            <div v-bind="wrapperProps">
+                <template v-for="item in list" :key="item.index">
+                    <SidebarChatSkeleton v-if="loading && item.index === messages.length - 1"></SidebarChatSkeleton>
+                    <ListMessage
+                        v-else
+                        :name="item.data.name"
+                        :message="item.data.message"
+                        :image="item.data.image"
+                        :created-at="item.data.createdAt"
+                        :unread-count="item.data.unreadCount"
+                        :role="item.data.role"
+                        :clicked="chatActive?.contactId === item.data.contactId"
+                        @onClick="listMessageClicked(item.data, item.index)"
+                    />
+                </template>
+            </div>
         </div>
     </div>
 </template>
