@@ -57,14 +57,14 @@ const fetchMessages = async (contactId: number, page = 1, append = false) => {
     } else {
         loadingMore.value = true
     }
-    
+
     const response: any = await $fetch(`/api/chat/${contactId}/messages`, {
         query: {
             page,
-            per_page: perPage
-        }
+            per_page: perPage,
+        },
     })
-    
+
     if (page === 1) {
         setLoading(false)
     } else {
@@ -73,7 +73,7 @@ const fetchMessages = async (contactId: number, page = 1, append = false) => {
 
     if (response.status === 200) {
         hasMoreMessages.value = response.data.hasMore
-        
+
         if (append) {
             // For older messages, add to the end (since we're scrolling up)
             setChatHistories([...chatHistories.value, ...response.data.data])
@@ -105,11 +105,13 @@ const sendMessage = async () => {
 }
 
 const handleScroll = () => {
-    if (!messagesContainer.value || loadingMore.value || !hasMoreMessages.value) return
-    
+    if (!messagesContainer.value || loadingMore.value || !hasMoreMessages.value)
+        return
+
     const container = messagesContainer.value
-    const scrollPosition = container.scrollHeight - container.scrollTop - container.clientHeight
-    
+    const scrollPosition =
+        container.scrollHeight - container.scrollTop - container.clientHeight
+
     // Load more when scrolled near the top
     if (scrollPosition > container.scrollHeight - 50) {
         loadMoreMessages()
@@ -117,22 +119,22 @@ const handleScroll = () => {
 }
 
 const loadMoreMessages = async () => {
-    if (!hasMoreMessages.value || loadingMore.value) return;
+    if (!hasMoreMessages.value || loadingMore.value) return
 
-    const container = messagesContainer.value;
-    if (!container) return;
+    const container = messagesContainer.value
+    if (!container) return
 
     // Simpan posisi scroll sebelum menambahkan pesan baru
-    const previousScrollHeight = container.scrollHeight;
+    const previousScrollHeight = container.scrollHeight
 
-    currentPage.value++;
-    await fetchMessages(contact.value?.id || 0, currentPage.value, true);
+    currentPage.value++
+    await fetchMessages(contact.value?.id || 0, currentPage.value, true)
 
-    await nextTick(); // Tunggu Vue merender data baru
+    await nextTick() // Tunggu Vue merender data baru
 
     // Setel kembali posisi scroll setelah pesan baru dimuat
-    container.scrollTop += container.scrollHeight - previousScrollHeight;
-};
+    container.scrollTop += container.scrollHeight - previousScrollHeight
+}
 
 const showDetailContact = () => {
     if (contactActive.value) {
@@ -162,7 +164,7 @@ onMounted(() => {
             }
         }
     })
-     // Add scroll listener
+    // Add scroll listener
     if (messagesContainer.value) {
         messagesContainer.value.addEventListener('scroll', handleScroll)
     }
@@ -221,7 +223,7 @@ onUnmounted(() => {
                 ref="messagesContainer"
                 class="grow-1 h-full p-4 overflow-y-auto overflow-hidden flex flex-col-reverse"
                 @scroll="handleScroll"
-            >   
+            >
                 <BoxMessage
                     v-for="chat in chatHistories"
                     :position="chat.role == 'user' ? 'left' : 'right'"

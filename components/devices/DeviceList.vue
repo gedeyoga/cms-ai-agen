@@ -30,6 +30,7 @@ import { toast } from 'vue-sonner'
 import { Icon } from '@iconify/vue/dist/iconify.js'
 import EmptyState from '../global/EmptyState.vue'
 import LoadingTableState from '../global/LoadingTableState.vue'
+import DialogDeleteDevice from './DialogDeleteDevice.vue'
 
 let meta = ref<MetaInterface>({
     currentPage: 1,
@@ -46,6 +47,7 @@ const { formatDate } = useFilters()
 
 let devices = ref<DeviceInterface[]>([])
 let showDialogConnect = ref<boolean>(false)
+let showDialogDeleteDevice = ref<boolean>(false)
 
 const fetchData = async () => {
     devices.value = []
@@ -87,21 +89,23 @@ let dataDevice = ref<DeviceInterface>({
     updatedAt: null,
 })
 
-const handleDelete = (id: number) => {
+const handleDelete = (id: string) => {
     const { show } = useAlertDialog()
+
+    dataDevice.value = devices.value.find((item: any) => item.id == id)
 
     show({
         title: 'Confirmation',
         content: 'Are you sure want to delete this item?',
         onConfirm: async () => {
-            const response: any = await $fetch('/api/devices/' + id, {
-                method: 'DELETE',
-            })
+            try {
+                const response = await $fetch('/api/devices/' + id, {
+                    method: 'delete',
+                    body: {},
+                })
+            } catch (error) {}
 
-            if (response.status == 200) {
-                toast.success(response.message)
-                fetchData()
-            }
+            showDialogDeleteDevice.value = true
         },
         onCancel: () => {},
     })
@@ -235,7 +239,7 @@ onMounted(async () => {
                             Edit</Button
                         >
                         <Button
-                            @click="handleDelete(parseInt(device.id + ''))"
+                            @click="handleDelete(device.id)"
                             variant="destructive"
                         >
                             <Icon icon="mdi:delete" :ssr="true"></Icon
@@ -321,4 +325,9 @@ onMounted(async () => {
         :device="dataDevice"
         @onSubmit="fetchData"
     />
+    <DialogDeleteDevice
+        v-model:show="showDialogDeleteDevice"
+        :device="dataDevice"
+        @onSubmit="fetchData"
+    ></DialogDeleteDevice>
 </template>
