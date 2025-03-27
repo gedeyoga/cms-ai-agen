@@ -27,9 +27,14 @@ export async function createChat(data: ChatHistoryInterface) {
     return chatHistory
 }
 
-export async function findChatByContacts(contactId: number, orderBy = 'desc', page = 1, perPage = 10) {
+export async function findChatByContacts(
+    contactId: number,
+    orderBy = 'desc',
+    page = 1,
+    perPage = 10
+) {
     const skip = (page - 1) * perPage
-    
+
     const [chatHistories, totalCount] = await Promise.all([
         prisma.chatHistory.findMany({
             include: {
@@ -48,7 +53,7 @@ export async function findChatByContacts(contactId: number, orderBy = 'desc', pa
             where: {
                 contactId: contactId,
             },
-        })
+        }),
     ])
 
     return {
@@ -56,7 +61,7 @@ export async function findChatByContacts(contactId: number, orderBy = 'desc', pa
         total: totalCount,
         page,
         perPage,
-        hasMore: skip + perPage < totalCount
+        hasMore: skip + perPage < totalCount,
     }
 }
 

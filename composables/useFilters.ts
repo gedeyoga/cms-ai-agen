@@ -27,7 +27,7 @@ export const useFilters = () => {
             return 'Kemarin' // Kemarin
         } else {
             if (isNaN(diffDays)) {
-                return '-'; // atau nilai default lainnya
+                return '-' // atau nilai default lainnya
             }
             // Format tanggal (YYYY/MM/DD)
             const dateOptions: Intl.DateTimeFormatOptions = {

@@ -37,9 +37,9 @@ export const sendWhatsapp = async (
         const response = await axios.post(`${fonnteAPi}send`, formData, {
             headers: {
                 Authorization: deviceToken,
-                ...formData.getHeaders()
-            }
-        })        
+                ...formData.getHeaders(),
+            },
+        })
         return response
     } catch (error) {
         return error

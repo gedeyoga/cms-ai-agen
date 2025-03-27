@@ -7,27 +7,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form'
-
-import { Input } from '@/components/ui/input'
-import { toTypedSchema } from '@vee-validate/zod'
 import { toast } from 'vue-sonner'
-import * as z from 'zod'
-import { dialogState } from '~/composables/dialog'
-import type { DeviceInterface } from '~/types/DeviceInterface'
 import { Loader2 } from 'lucide-vue-next'
-import PhoneNumber from '~/components/global/PhoneNumber'
-import { Icon } from '@iconify/vue/dist/iconify.js'
+import type { DeviceInterface } from '~/services/fonnte/types/DeviceInterface'
 const { $pusher } = useNuxtApp()
-
-let { isOpen, closeDialog } = dialogState()
 
 const props = defineProps({
     device: {

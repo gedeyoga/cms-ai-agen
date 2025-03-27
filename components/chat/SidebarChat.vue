@@ -29,13 +29,10 @@ let containerRef = ref<HTMLElement | null>(null)
 
 // Virtual list setup
 const itemHeight = 65 // Estimated height of each chat item in pixels
-const { list, containerProps, wrapperProps } = useVirtualList(
-  messages,
-  {
+const { list, containerProps, wrapperProps } = useVirtualList(messages, {
     itemHeight,
     overscan: 10, // Number of extra items to render above/below the visible area
-  }
-)
+})
 
 const setLoading = (val: boolean) => {
     loading.value = val
@@ -72,19 +69,21 @@ const fetchData = async (page = 1, append = false) => {
                     createdAt: item.chatHistories?.[0]?.createdAt || '-',
                     unreadCount: item.unreadCount,
                     role: item.chatHistories?.[0]?.role || '-',
-                }))
+                })),
             ])
         } else {
             contacts.value = newContacts
-            setMessages(newContacts.map((item: ContactInterface) => ({
-                contactId: item.id,
-                name: item.name,
-                image: '/images/default-user.png',
-                message: item.chatHistories?.[0]?.content || '-',
-                createdAt: item.chatHistories?.[0]?.createdAt || '-',
-                unreadCount: item.unreadCount,
-                role: item.chatHistories?.[0]?.role || '-',
-            })))
+            setMessages(
+                newContacts.map((item: ContactInterface) => ({
+                    contactId: item.id,
+                    name: item.name,
+                    image: '/images/default-user.png',
+                    message: item.chatHistories?.[0]?.content || '-',
+                    createdAt: item.chatHistories?.[0]?.createdAt || '-',
+                    unreadCount: item.unreadCount,
+                    role: item.chatHistories?.[0]?.role || '-',
+                }))
+            )
         }
     }
 }
@@ -98,7 +97,7 @@ const loadMoreData = async () => {
 const onScroll = (e: Event) => {
     const target = e.target as HTMLElement
     const { scrollTop, scrollHeight, clientHeight } = target
-    
+
     // Check if we've scrolled near the bottom
     if (scrollHeight - (scrollTop + clientHeight) < 100) {
         loadMoreData()
@@ -131,7 +130,7 @@ watch(incomingChat, (val) => {
             unreadCount: unreadCount,
             role: val.role,
         }
-        
+
         setMessages([newMessage, ...messages.value])
     }
 })
@@ -169,7 +168,6 @@ onMounted(async () => {
 
     await fetchData()
 })
-
 </script>
 
 <template>
@@ -208,14 +206,16 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div 
+        <div
             v-bind="containerProps"
             class="overflow-y-auto px-3"
             @scroll="onScroll"
         >
             <div v-bind="wrapperProps">
                 <template v-for="item in list" :key="item.index">
-                    <SidebarChatSkeleton v-if="loading && item.index === messages.length - 1"></SidebarChatSkeleton>
+                    <SidebarChatSkeleton
+                        v-if="loading && item.index === messages.length - 1"
+                    ></SidebarChatSkeleton>
                     <ListMessage
                         v-else
                         :name="item.data.name"
