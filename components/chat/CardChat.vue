@@ -7,7 +7,7 @@ const { contactActive } = useChatState()
 
 <template>
     <div
-        class="h-screen flex border border-gray-800 divide-x divide-gray-700 rounded-xl overflow-hidden"
+        class="h-[49rem] flex border border-gray-800 divide-x divide-gray-700 rounded-xl overflow-hidden"
     >
         <SidebarChat></SidebarChat>
         <CardMessage :contact="contactActive"></CardMessage>
