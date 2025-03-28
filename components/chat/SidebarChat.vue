@@ -31,7 +31,7 @@ let containerRef = ref<HTMLElement | null>(null)
 const itemHeight = 65 // Estimated height of each chat item in pixels
 const { list, containerProps, wrapperProps } = useVirtualList(messages, {
     itemHeight,
-    overscan: 10, // Number of extra items to render above/below the visible area
+    overscan: 11, // Number of extra items to render above/below the visible area
 })
 
 const setLoading = (val: boolean) => {
